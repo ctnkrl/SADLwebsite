@@ -21,3 +21,20 @@ body{background:#fff}.site-header{background:#111719f5;color:#edf3f0;border-colo
 @media(max-width:700px){.site-header nav{background:#111719;border-color:#ffffff22}.site-header.is-scrolled nav{background:#fff;border-color:var(--line)}.hero-copy{padding:25px 20px 0}.research-label{font-size:7px;margin-bottom:14px;gap:6px}.hero h1{font-size:27px;line-height:1.23}.hero .paper-authors{margin-top:17px}.hero .author-list{font-size:11px;line-height:1.85}.hero .affiliations{font-size:9px;gap:4px 9px}.hero .corresponding{font-size:8px}.hero .resource-links{margin-top:17px}.hero-description{font-size:13px;line-height:1.5;margin-top:16px}.representation-stage{height:220px}.scene-label,.scene-axis{bottom:12px;font-size:7px}.scene-label{left:20px}.scene-axis{right:20px}.scene-toolbar{gap:10px;flex-wrap:wrap;min-height:38px}.scene-modes button{font-size:9px;min-width:75px;padding:5px 8px}.scene-toolbar>p{font-size:7px}.hero .explore-link{margin-top:8px;padding-bottom:19px}.video-section{padding-block:45px}.video-section-heading{margin-bottom:20px;gap:15px}.video-section-heading h2{font-size:26px}.availability{font-size:9px}.video-placeholder{aspect-ratio:16/10}.video-wordmark{font-size:58px}.video-placeholder-caption{font-size:10px;margin-top:18px}.video-frame-label{bottom:20px;left:22px;font-size:6px}.video-corner{width:12px;height:12px}.supply-flow{grid-template-columns:45px 1fr 45px 1fr 45px;gap:12px;margin-top:23px;height:60px}.flow-node{font-size:25px}.flow-node small{font-size:7px}.flow-track:before,.flow-track:after{width:4px;height:4px;top:-1px}.geometry-figure{max-width:none}.motion-enabled .reveal{transform:translateY(14px)}}
 @media(max-width:360px){.hero-copy{padding:20px 14px 0}.hero h1{font-size:23px}.research-label{font-size:6px}.hero .author-list{font-size:10px;line-height:1.7}.hero .affiliations{font-size:8px}.hero .paper-authors{margin-top:13px}.hero-description{font-size:12px}.representation-stage{height:180px}.scene-toolbar{gap:7px}.scene-modes button{min-width:64px}.scene-toolbar>p{font-size:6px}.video-section-heading h2{font-size:23px}}
 @media(prefers-reduced-motion:reduce){.motion-enabled .reveal{opacity:1;transform:none}.flow-track:before,.flow-track:after{animation:none;left:50%}.energy-row .fill,.bar-row .fill{animation:none}.site-header{transition:none}}
+
+/* Compact, evidence-first title block inspired by the INTACT project page. */
+.hero-logo-button{display:block;position:relative;width:min(1120px,calc(100% - 52px));margin:22px auto 8px;padding:0;border:0;background:#fff;cursor:zoom-in;overflow:hidden}
+.hero-logo{display:block;width:100%;height:auto;max-height:235px;object-fit:contain}
+.hero-logo-button .zoom-indicator{opacity:0;transition:opacity .2s ease}
+.hero-logo-button:hover .zoom-indicator,.hero-logo-button:focus-visible .zoom-indicator{opacity:1}
+.hero h1{font-size:36px;line-height:1.2;max-width:1030px}
+.hero .paper-authors{margin-top:19px}
+.hero .hero-description{max-width:760px;margin-inline:auto}
+.robo-party-mark{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:11px;letter-spacing:.01em}
+.robo-glyph{display:flex;align-items:center;gap:3px;height:18px}
+.robo-glyph i{display:block;width:4px;height:8px;background:var(--green);border-radius:1px}
+.robo-glyph i:nth-child(2){height:15px}.robo-glyph i:nth-child(3){height:11px}
+.footer-links{display:flex;gap:18px}
+@media(min-width:1600px){.hero-logo{max-height:270px}.hero-logo-button{margin-top:28px}.hero h1{font-size:40px}}
+@media(min-width:701px) and (max-height:850px){.hero-logo{max-height:175px}.hero-logo-button{margin-top:14px;margin-bottom:4px}.hero h1{font-size:32px}.hero .paper-authors{margin-top:12px}}
+@media(max-width:700px){.hero-logo-button{width:calc(100% - 28px);margin-top:18px}.hero-logo{max-height:none}.hero h1{font-size:27px}.robo-party-mark{width:100%;padding-top:3px}.footer-links{width:100%}}
