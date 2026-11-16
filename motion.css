@@ -61,3 +61,4 @@ body{background:#fff}.site-header{background:#111719f5;color:#edf3f0;border-colo
 .hero .explore-link{color:var(--muted)}
 .hero .explore-link:hover{color:var(--green)}
 body .prose em,body .method-steps .equation,body .energy-row>span,body .objective-equation,body .method-details .equation,body .ablation-intro em,body .flow-node{font-family:var(--font)}
+.representation-section{background:#fff;border-block:1px solid var(--line);padding:42px 0 18px}.representation-section .section-heading{margin-bottom:18px}.representation-section .section-heading h2{font-size:30px}.representation-section .scene-toolbar{color:var(--muted)}.representation-section .scene-modes{border-color:var(--line)}.representation-section .scene-modes button{color:var(--muted)}.representation-section .scene-toolbar .icon-button{border-color:var(--line);color:var(--muted)}

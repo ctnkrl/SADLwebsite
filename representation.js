@@ -62,7 +62,7 @@ function startScene() {
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
   geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-  const material = new THREE.PointsMaterial({ size: 0.031, vertexColors: true, transparent: true, opacity: 1, sizeAttenuation: true, depthWrite: false });
+  const material = new THREE.PointsMaterial({ size: 0.075, vertexColors: true, transparent: true, opacity: 1, sizeAttenuation: true, depthWrite: false });
   group.add(new THREE.Points(geometry, material));
   const grid = new THREE.GridHelper(22, 32, 0xc7d9d1, 0xe3ece8);
   grid.position.y = -1.6;
