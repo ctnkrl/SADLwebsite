@@ -282,10 +282,10 @@
       if (!bufferContext) return;
       bufferContext.drawImage(image, 0, 0, sampleWidth, sampleHeight);
       const pixels = bufferContext.getImageData(0, 0, sampleWidth, sampleHeight).data;
-      const step = 3;
+      const step = 2;
       for (let y = 0; y < sampleHeight; y += step) {
         for (let x = 0; x < sampleWidth; x += step) {
-          if ((x * 17 + y * 31) % 4 !== 0) continue;
+          if ((x * 17 + y * 31) % 2 !== 0) continue;
           const index = (y * sampleWidth + x) * 4;
           const red = pixels[index];
           const green = pixels[index + 1];
@@ -295,8 +295,8 @@
           points.push({
             u: x / sampleWidth,
             v: y / sampleHeight,
-            color: `rgba(${red},${green},${blue},${Math.max(.32, alpha / 255)})`,
-            radius: .55 + ((x * 13 + y * 7) % 11) / 12,
+            color: `rgba(${red},${green},${blue},${Math.max(.8, alpha / 255)})`,
+            radius: .68 + ((x * 13 + y * 7) % 11) / 11,
             phase: ((x * 5 + y * 3) % 100) / 100,
             currentX: 0,
             currentY: 0
