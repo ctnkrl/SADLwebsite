@@ -242,6 +242,149 @@
     if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) dialog.close();
   });
 
+  // Rebuild the phase999 logo as a lightweight point cloud on hover.
+  function initLogoParticles() {
+    const host = $("#logo-particle-button");
+    const canvas = host?.querySelector(".hero-logo-particles");
+    const sourcePath = host?.dataset.particleSource;
+    if (!host || !canvas || !sourcePath || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const context = canvas.getContext("2d");
+    if (!context) return;
+
+    const image = new Image();
+    const points = [];
+    const pointer = { x: 0, y: 0, active: false };
+    let width = 0;
+    let height = 0;
+    let scale = 1;
+    let hovering = false;
+    let ready = false;
+    let frame = 0;
+
+    function resize() {
+      const bounds = host.getBoundingClientRect();
+      width = Math.max(1, bounds.width);
+      height = Math.max(1, bounds.height);
+      scale = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.round(width * scale);
+      canvas.height = Math.round(height * scale);
+      context.setTransform(scale, 0, 0, scale, 0, 0);
+    }
+
+    function sample() {
+      const ratio = image.naturalHeight / image.naturalWidth || 0.345;
+      const sampleWidth = 1100;
+      const sampleHeight = Math.max(1, Math.round(sampleWidth * ratio));
+      const buffer = document.createElement("canvas");
+      buffer.width = sampleWidth;
+      buffer.height = sampleHeight;
+      const bufferContext = buffer.getContext("2d", { willReadFrequently: true });
+      if (!bufferContext) return;
+      bufferContext.drawImage(image, 0, 0, sampleWidth, sampleHeight);
+      const pixels = bufferContext.getImageData(0, 0, sampleWidth, sampleHeight).data;
+      const step = 3;
+      for (let y = 0; y < sampleHeight; y += step) {
+        for (let x = 0; x < sampleWidth; x += step) {
+          if ((x * 17 + y * 31) % 4 !== 0) continue;
+          const index = (y * sampleWidth + x) * 4;
+          const red = pixels[index];
+          const green = pixels[index + 1];
+          const blue = pixels[index + 2];
+          const alpha = pixels[index + 3];
+          if (alpha < 24 || (red > 244 && green > 244 && blue > 244)) continue;
+          points.push({
+            u: x / sampleWidth,
+            v: y / sampleHeight,
+            color: `rgba(${red},${green},${blue},${Math.max(.32, alpha / 255)})`,
+            radius: .55 + ((x * 13 + y * 7) % 11) / 12,
+            phase: ((x * 5 + y * 3) % 100) / 100,
+            currentX: 0,
+            currentY: 0
+          });
+        }
+      }
+      ready = points.length > 0;
+      resize();
+      points.forEach((point) => { point.currentX = point.u * width; point.currentY = point.v * height; });
+    }
+
+    function animate(now) {
+      frame = 0;
+      if (!ready) return;
+      const time = now * .001;
+      const centerX = width / 2;
+      const centerY = height / 2;
+      context.clearRect(0, 0, width, height);
+      points.forEach((point) => {
+        const baseX = centerX + (point.u * width - centerX) * (hovering ? 1.055 : 1);
+        const baseY = centerY + (point.v * height - centerY) * (hovering ? 1.055 : 1);
+        let targetX = baseX;
+        let targetY = baseY;
+        if (hovering && pointer.active) {
+          const dx = baseX - pointer.x;
+          const dy = baseY - pointer.y;
+          const distance = Math.hypot(dx, dy);
+          const radius = Math.min(125, Math.max(72, width * .11));
+          if (distance > 0 && distance < radius) {
+            const force = 16 * Math.pow(1 - distance / radius, 2);
+            targetX += dx / distance * force;
+            targetY += dy / distance * force;
+          }
+        }
+        if (hovering) {
+          targetX += Math.sin(time * 1.8 + point.phase * 8) * .8;
+          targetY += Math.cos(time * 1.55 + point.phase * 7) * .8;
+        }
+        point.currentX += (targetX - point.currentX) * (hovering ? .18 : .24);
+        point.currentY += (targetY - point.currentY) * (hovering ? .18 : .24);
+        context.fillStyle = point.color;
+        context.beginPath();
+        context.arc(point.currentX, point.currentY, point.radius * (hovering ? 1.08 : 1), 0, Math.PI * 2);
+        context.fill();
+      });
+      if (hovering || points.some((point) => Math.abs(point.currentX - point.u * width) > .15 || Math.abs(point.currentY - point.v * height) > .15)) {
+        frame = requestAnimationFrame(animate);
+      }
+    }
+
+    function startAnimation() {
+      if (!frame) frame = requestAnimationFrame(animate);
+    }
+
+    image.onload = () => { sample(); startAnimation(); };
+    image.src = sourcePath;
+    host.addEventListener("pointerenter", (event) => {
+      hovering = true;
+      pointer.active = true;
+      const bounds = host.getBoundingClientRect();
+      pointer.x = event.clientX - bounds.left;
+      pointer.y = event.clientY - bounds.top;
+      host.classList.add("is-particle-hover");
+      startAnimation();
+    });
+    host.addEventListener("pointermove", (event) => {
+      const bounds = host.getBoundingClientRect();
+      pointer.x = event.clientX - bounds.left;
+      pointer.y = event.clientY - bounds.top;
+      pointer.active = true;
+      startAnimation();
+    });
+    host.addEventListener("pointerleave", () => {
+      hovering = false;
+      pointer.active = false;
+      host.classList.remove("is-particle-hover");
+      startAnimation();
+    });
+    window.addEventListener("resize", () => {
+      resize();
+      points.forEach((point) => {
+        point.currentX = point.u * width;
+        point.currentY = point.v * height;
+      });
+    }, { passive: true });
+  }
+  initLogoParticles();
+
   if ("IntersectionObserver" in window) {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
