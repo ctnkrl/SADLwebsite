@@ -1,5 +1,11 @@
 # SADL project website
 
+Live website: https://ctnkrl.github.io/SADLwebsite/
+
+Website repository: https://github.com/ctnkrl/SADLwebsite
+
+GitHub Pages publishes the repository's `main` branch from `/`. To update the public page, upload the changed files to that branch; GitHub will rebuild it automatically. This repository contains the website and paper, not the SADL training code.
+
 Open `index.html` in a browser. The site is static and has no build step, external font dependency, analytics, or server requirement. Icons, figures, and the paper are included locally.
 
 ## Contents
