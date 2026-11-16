@@ -28,7 +28,7 @@ The code entry is marked **Coming soon**, as requested. Once code is ready for p
 
 Control figures and numbers come from the signed paper, including the ten-seed mechanism audit and the separate three-seed matched-backend comparison. The gate sliders illustrate the scalar penalty, rather than measured training trajectories. No videos from other projects are included.
 
-The research content follows problem, method, and evidence: an overview of SADL; the BN mechanism and fixed-probe measurements; the total training loss and one-sided correction; matched-backend control results and a five-weight encoder-regularization comparison; image learning curves and updates-to-target; and learned output geometries. The English and Chinese text cover the same evidence. Source links identify the paper tables used for the control and ablation results. The video placeholder follows these research sections.
+The research content follows problem, method, and evidence: an overview of SADL; the BN mechanism and fixed-probe measurements; the total training loss and one-sided correction; matched-backend control results and a five-weight encoder-regularization comparison; image learning curves and updates-to-target; and learned output geometries. The English and Chinese text cover the same evidence. Source links identify the paper tables used for the control and ablation results. The video placeholder sits immediately after the opening metrics, before the research overview.
 
 The SADL video section is a deliberate placeholder with no fake playback control. When the real video is available, replace `.video-placeholder` with a responsive video element; keep the `#video` section anchor.
 
