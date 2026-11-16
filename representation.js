@@ -82,6 +82,14 @@ function startScene() {
   let previousX = 0;
   let drag = false;
   let dragRotation = 0;
+  function setZoom(value) {
+    camera.zoom = THREE.MathUtils.clamp(value, 0.8, 1.8);
+    camera.updateProjectionMatrix();
+    canvas.dataset.zoom = camera.zoom.toFixed(2);
+    document.querySelector('#scene-zoom-in').disabled = camera.zoom >= 1.8;
+    document.querySelector('#scene-zoom-out').disabled = camera.zoom <= 0.8;
+    wake();
+  }
   function resize() {
     const width = stage.clientWidth;
     const height = stage.clientHeight;
@@ -154,9 +162,19 @@ function startScene() {
     window.lucide?.createIcons();
   }
   pauseButton.addEventListener('click', () => { paused = !paused; syncPauseButton(); last = performance.now(); wake(); });
+  document.querySelector('#scene-zoom-in').addEventListener('click', () => setZoom(camera.zoom + 0.2));
+  document.querySelector('#scene-zoom-out').addEventListener('click', () => setZoom(camera.zoom - 0.2));
+  document.querySelector('#scene-reset').addEventListener('click', () => {
+    pointerX = 0;
+    pointerY = 0;
+    dragRotation = 0;
+    group.rotation.set(0, 0, 0);
+    setZoom(1);
+  });
   reducedMotion.addEventListener('change', () => { paused = reducedMotion.matches; syncPauseButton(); wake(); });
   canvas.addEventListener('webglcontextlost', event => { event.preventDefault(); cancelAnimationFrame(raf); stage.classList.remove('is-ready'); stage.classList.add('is-unavailable'); });
   canvas.dataset.shape = 'expanded';
+  canvas.dataset.zoom = '1.00';
   stage.classList.add('is-ready');
   syncPauseButton();
   resize();

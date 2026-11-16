@@ -7,9 +7,14 @@
   let language = "en";
   let epoch = 2;
   let toastTimer;
+  let geometryFamily = "regularizer";
+  let geometrySelection = "sigreg";
 
   const chinese = {
-    "nav.insight": "问题", "nav.method": "方法", "nav.results": "控制", "nav.images": "图像", "nav.video": "视频", "nav.code": "代码",
+    "nav.insight": "问题", "nav.method": "方法", "nav.results": "控制", "nav.geometry": "几何", "nav.images": "图像", "nav.video": "视频", "nav.code": "代码",
+    "explorer.regularizers": "正则项", "explorer.glyphs": "字形目标", "explorer.setting": "输出约束", "explorer.success": "第 1 个 epoch 的控制成功率", "explorer.fullFigure": "论文完整原图",
+    "attention.dataset": "数据集", "attention.sample": "样本", "attention.input": "输入",
+    "results.modelFilter": "模型", "results.backendFilter": "编码器后端", "results.allModels": "两种模型", "results.allBackends": "两种后端",
     "scene.label": "表征空间", "scene.collapsed": "坍塌", "scene.expanded": "展开", "scene.note": "概念动画示意",
     "video.label": "SADL / 视频", "video.title": "SADL 视频", "video.placeholder": "视频即将发布",
     "hero.description": "自适应、单边的供给正则项，<br>用于稳定的表征学习。",
@@ -62,7 +67,7 @@
     "results.ltTitle": "ImageNet-LT · 达到基线最终精度 90% 所需更新数", "results.ltNote": "减少约 10% 的更新 · 3 个训练 seed 的中位数",
     "results.targetNote": "达到目标精度所需的更新数，来自另一组 3 个 seed 的对照实验。每个目标均以该组基线的最终精度定义。",
     "geometry.title": "跨需求正则项的适配", "geometry.description": "我们使用八种需求正则项测试 SADL，而非假设单一高斯目标。训练一个 epoch 后，八种设置下 INTACT 的免搜索 Direct 成功率均超过 92%，其中七种达到 95.03–95.81%。",
-    "geometry.note": "真实训练得到的表征。上两排为八种正则项下的三维 PCA 视图，成功率是 3 个 seed 的四任务均值；下排是独立训练的二维字形目标，成功率来自单个 seed。颜色区分四个控制任务。见论文图 5、表 5。",
+    "geometry.note": "真实训练得到的表征。八种正则项展示三维 PCA 视图，成功率是 3 个 seed 的四任务均值；独立训练的二维字形目标，成功率来自单个 seed。颜色区分四个控制任务。见论文图 5、表 5。",
     "geometry.conclusion": "Student-t、GMM-Ring、Sphere shell 和 VIC moments 涵盖非高斯或未指定密度的约束。独立训练的字形目标进一步展示了对不同端点几何的适配。",
     "code.title": "代码即将发布。", "code.status": "Coming soon",
     "citation.title": "引用", "citation.description": "SADL: On the Demand-Supply Geometry of Representation Collapse",
@@ -75,6 +80,74 @@
     { model: "LeWM", backend: "MATH", values: { 1: [30.9, 0.8, 63.9, 1.2], 2: [46.0, 6.0, 70.4, 1.6] } },
     { model: "LeWM", backend: "Flash", values: { 1: [32.1, 4.9, 63.4, 5.7], 2: [31.4, 15.8, 69.1, 2.9] } }
   ];
+  const geometryFigures = [
+    { id: "sigreg", label: "SIGReg", success: 95.58 },
+    { id: "visreg", label: "VISReg", success: 95.08 },
+    { id: "qqworld", label: "QQWorld", success: 95.81 },
+    { id: "energy-gaussian", label: "Energy-Gaussian", success: 95.33 },
+    { id: "vic-moments", label: "VIC moments", success: 95.03 },
+    { id: "student-t5", label: "Student-t5", success: 92.33 },
+    { id: "gmm-ring", label: "GMM-Ring", success: 95.11 },
+    { id: "sphere-shell", label: "Sphere shell", success: 95.44 },
+    { id: "glyph-j", label: "J", success: 94.00 },
+    { id: "glyph-e", label: "E", success: 92.75 },
+    { id: "glyph-p", label: "P", success: 93.25 },
+    { id: "glyph-a", label: "A", success: 94.75 }
+  ];
+
+  function drawGeometry() {
+    const figures = geometryFigures.filter(item => item.id.startsWith("glyph-") === (geometryFamily === "glyph"));
+    const index = Math.max(0, figures.findIndex(item => item.id === geometrySelection));
+    const selected = figures[index];
+    geometrySelection = selected.id;
+    const select = $("#geometry-select");
+    select.replaceChildren(...figures.map(item => new Option(item.label, item.id)));
+    select.value = selected.id;
+    $$("[data-geometry-family]").forEach(button => button.setAttribute("aria-pressed", String(button.dataset.geometryFamily === geometryFamily)));
+    $("#geometry-position").textContent = `${index + 1} / ${figures.length}`;
+    $("#geometry-success").innerHTML = `${selected.success.toFixed(2)}<span>%</span>`;
+    $("#geometry-cohort").textContent = geometryFamily === "glyph"
+      ? language === "zh" ? "INTACT · 单个训练 seed · 四任务平均" : "INTACT · single training seed · four-task mean"
+      : language === "zh" ? "INTACT · 3 个训练 seed · 四任务平均" : "INTACT · 3 training seeds · four-task mean";
+    const path = `assets/figures/geometry-${selected.id}.webp`;
+    const image = $("#geometry-panel-image");
+    if (image.getAttribute("src") !== path) {
+      image.src = path;
+      if (!matchMedia("(prefers-reduced-motion: reduce)").matches) image.animate([{ opacity: .55 }, { opacity: 1 }], { duration: 220, easing: "ease-out" });
+    }
+    image.alt = `${selected.label} · INTACT epoch 1 · Paper Figure 5`;
+    $("#geometry-panel").dataset.zoom = path;
+    $("#geometry-panel").dataset.caption = `${selected.label} · ${selected.success.toFixed(2)}% · Paper Figure 5`;
+    for (const [id, en, zh] of [["geometry-previous", "Previous setting", "上一项"], ["geometry-next", "Next setting", "下一项"]]) {
+      $("#" + id).title = language === "zh" ? zh : en;
+      $("#" + id).setAttribute("aria-label", language === "zh" ? zh : en);
+    }
+  }
+
+  function stepGeometry(direction) {
+    const figures = geometryFigures.filter(item => item.id.startsWith("glyph-") === (geometryFamily === "glyph"));
+    const current = figures.findIndex(item => item.id === geometrySelection);
+    geometrySelection = figures[(current + direction + figures.length) % figures.length].id;
+    drawGeometry();
+  }
+
+  function drawAttention() {
+    const dataset = $("#attention-dataset").value;
+    const sample = $("#attention-sample").value;
+    for (const kind of ["input", "baseline", "sadl"]) {
+      const image = $("#attention-" + kind + "-image");
+      image.src = `assets/figures/attention-${dataset}-${sample}-${kind}.webp`;
+      const name = dataset === "imagenet" ? "ImageNet-LT" : "Galaxy10";
+      image.alt = `${name} · sample ${sample} · ${kind === "input" ? "Input" : kind === "baseline" ? "VISReg" : "SADL + VISReg"} · Paper Figure 3`;
+    }
+    updateAttentionSplit();
+  }
+
+  function updateAttentionSplit() {
+    const split = Number($("#attention-split").value);
+    $("#attention-reveal").style.setProperty("--split", `${split}%`);
+    $("#attention-split").setAttribute("aria-valuetext", `VISReg ${split}%, SADL + VISReg ${100 - split}%`);
+  }
   const citation = `@misc{sun2026sadl,
   title  = {{SADL}: On the Demand-Supply Geometry of Representation Collapse},
   author = {Junhan Sun and Yigui Feng and Mingzhe Liu and Haoyan Xu and
@@ -90,14 +163,22 @@
     chart.replaceChildren();
     table.replaceChildren();
     for (const { model, backend, values } of controls) {
+      if ($("#control-model").value !== "all" && $("#control-model").value !== model) continue;
+      if ($("#control-backend").value !== "all" && $("#control-backend").value !== backend) continue;
       const [baseline, baselineSD, sadl, sadlSD] = values[epoch];
       const group = document.createElement("div");
       group.className = "control-group";
       group.innerHTML = `<div class="control-group-label"><h4>${model} / ${backend}</h4><span>+${(sadl - baseline).toFixed(1)} pp</span></div>`;
-      for (const [value, active] of [[baseline, false], [sadl, true]]) {
+      for (const [value, sd, active] of [[baseline, baselineSD, false], [sadl, sadlSD, true]]) {
         const row = document.createElement("div");
         row.className = `bar-row${active ? " is-sadl" : ""}`;
-        row.innerHTML = `<span>${active ? "+ SADL" : language === "zh" ? "基线" : "Baseline"}</span><div class="track"><b class="fill ${active ? "sadl-fill" : "baseline-fill"}" style="width:${value}%"></b></div><strong>${value.toFixed(1)}%</strong>`;
+        const label = active ? "+ SADL" : language === "zh" ? "基线" : "Baseline";
+        const tooltipId = `result-${model}-${backend}-${active ? "sadl" : "baseline"}`;
+        const low = Math.max(0, value - sd);
+        const high = Math.min(100, value + sd);
+        row.tabIndex = 0;
+        row.setAttribute("aria-describedby", tooltipId);
+        row.innerHTML = `<span>${label}</span><div class="track"><b class="fill ${active ? "sadl-fill" : "baseline-fill"}" style="width:${value}%"></b><span class="error-range" style="left:${low}%;width:${high - low}%" aria-hidden="true"></span></div><strong>${value.toFixed(1)}%</strong><span class="result-tooltip" role="tooltip" id="${tooltipId}">${model} · ${backend} · ${label}<br>${value.toFixed(1)} ± ${sd.toFixed(1)}% · ${language === "zh" ? "3 个训练 seed" : "3 training seeds"}</span>`;
         group.append(row);
       }
       chart.append(group);
@@ -136,6 +217,8 @@
     $("#language").setAttribute("aria-label", next === "zh" ? "Switch to English" : "切换为中文");
     drawControls();
     updateGate();
+    drawGeometry();
+    drawAttention();
     try { localStorage.setItem("sadl-language", next); } catch (_) { /* Storage may be disabled for local files. */ }
   }
 
@@ -197,6 +280,17 @@
   }
   $("#language").addEventListener("click", () => setLanguage(language === "en" ? "zh" : "en"));
   $$("[data-epoch]").forEach((button) => button.addEventListener("click", () => { epoch = Number(button.dataset.epoch); drawControls(); }));
+  ["control-model", "control-backend"].forEach(id => $("#" + id).addEventListener("change", drawControls));
+  $$("[data-geometry-family]").forEach(button => button.addEventListener("click", () => {
+    geometryFamily = button.dataset.geometryFamily;
+    geometrySelection = geometryFamily === "glyph" ? "glyph-j" : "sigreg";
+    drawGeometry();
+  }));
+  $("#geometry-select").addEventListener("change", event => { geometrySelection = event.target.value; drawGeometry(); });
+  $("#geometry-previous").addEventListener("click", () => stepGeometry(-1));
+  $("#geometry-next").addEventListener("click", () => stepGeometry(1));
+  ["attention-dataset", "attention-sample"].forEach(id => $("#" + id).addEventListener("change", drawAttention));
+  $("#attention-split").addEventListener("input", updateAttentionSplit);
   ["demand", "supply"].forEach((id) => $("#" + id).addEventListener("input", updateGate));
   $("#citation-text").textContent = citation;
   $("#copy-citation").addEventListener("click", () => copy(citation));
@@ -389,7 +483,7 @@
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (!entry.isIntersecting) return;
-        const section = entry.target.id === "geometry" ? "results" : entry.target.id;
+        const section = entry.target.id;
         $$("#navigation a").forEach((link) => link.classList.toggle("active", link.hash === "#" + section));
       });
     }, { rootMargin: "-15% 0px -65% 0px" });
