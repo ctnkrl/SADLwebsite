@@ -9,7 +9,9 @@
   let toastTimer;
 
   const chinese = {
-    "nav.insight": "问题", "nav.method": "方法", "nav.results": "实验", "nav.code": "代码",
+    "nav.insight": "问题", "nav.method": "方法", "nav.results": "实验", "nav.video": "视频", "nav.code": "代码",
+    "scene.label": "表征空间", "scene.collapsed": "坍塌", "scene.expanded": "展开", "scene.note": "概念动画示意",
+    "video.label": "SADL / 视频", "video.title": "用影像讲述 SADL。", "video.placeholder": "视频即将发布",
     "hero.description": "投影输出满足约束，还不够。<br>编码器也要保留不同输入之间的差异。",
     "hero.paper": "论文", "hero.code": "代码 · Coming soon",
     "hero.caption": "不同的输出几何，同一套供需约束。<span>真实训练得到的表征 · 单 seed 字形目标实验</span>",
@@ -175,6 +177,35 @@
     showToast(language === "zh" ? "已复制" : "Copied to clipboard");
   }
 
+  const progress = document.createElement("div");
+  progress.className = "page-progress";
+  progress.setAttribute("aria-hidden", "true");
+  document.body.prepend(progress);
+  let scrolling = false;
+  function updateScroll() {
+    const total = document.documentElement.scrollHeight - innerHeight;
+    progress.style.transform = `scaleX(${total > 0 ? scrollY / total : 0})`;
+    $(".site-header").classList.toggle("is-scrolled", scrollY > 80);
+    scrolling = false;
+  }
+  addEventListener("scroll", () => {
+    if (!scrolling) { scrolling = true; requestAnimationFrame(updateScroll); }
+  }, { passive: true });
+  updateScroll();
+  if ("IntersectionObserver" in window && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    document.body.classList.add("motion-enabled");
+    const reveal = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("is-visible");
+        reveal.unobserve(entry.target);
+      });
+    }, { threshold: 0.08 });
+    $$(".section-heading, .insight-grid, .wide-figure, .method-steps, .gate-demo, .video-placeholder, .geometry-figure").forEach(element => {
+      element.classList.add("reveal");
+      reveal.observe(element);
+    });
+  }
   $("#language").addEventListener("click", () => setLanguage(language === "en" ? "zh" : "en"));
   $$("[data-epoch]").forEach((button) => button.addEventListener("click", () => { epoch = Number(button.dataset.epoch); drawControls(); }));
   ["demand", "supply"].forEach((id) => $("#" + id).addEventListener("input", updateGate));
@@ -232,7 +263,7 @@
         $$("#navigation a").forEach((link) => link.classList.toggle("active", link.hash === "#" + entry.target.id));
       });
     }, { rootMargin: "-15% 0px -65% 0px" });
-    $$("#insight, #method, #results, #code").forEach((section) => observer.observe(section));
+    $$("#insight, #method, #results, #video, #code").forEach((section) => observer.observe(section));
   }
   window.lucide?.createIcons();
   try { if (localStorage.getItem("sadl-language") === "zh") language = "zh"; } catch (_) { /* Use English by default. */ }

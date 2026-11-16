@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#ffffff">
+  <meta name="theme-color" content="#111719">
   <meta name="description" content="SADL: On the Demand-Supply Geometry of Representation Collapse. A parameter-free, demand-conditioned correction for encoder representations in JEPAs.">
   <meta property="og:title" content="SADL — On the Demand-Supply Geometry of Representation Collapse">
   <meta property="og:description" content="Preserve the differences that prediction needs. Paper, evidence, and open-source implementation.">
@@ -13,27 +13,36 @@
   <title>SADL | On the Demand-Supply Geometry of Representation Collapse</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="motion.css">
   <script src="assets/vendor/lucide.min.js" defer></script>
   <script src="site.js" defer></script>
+  <script type="module" src="representation.js"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header">
     <a class="wordmark" href="#" aria-label="SADL home"><span class="brand-mark" aria-hidden="true"><b></b><b></b><b></b><b></b></span>SADL</a>
     <nav aria-label="Main navigation" id="navigation">
-      <a href="#insight" data-t="nav.insight">The insight</a><a href="#method" data-t="nav.method">Method</a><a href="#results" data-t="nav.results">Results</a><a href="#code" data-t="nav.code">Code</a>
+      <a href="#insight" data-t="nav.insight">The insight</a><a href="#method" data-t="nav.method">Method</a><a href="#results" data-t="nav.results">Results</a><a href="#video" data-t="nav.video">Video</a><a href="#code" data-t="nav.code">Code</a>
     </nav>
     <div class="header-actions"><button class="lang-button" id="language" aria-label="Switch to Chinese">中文</button><button class="menu-toggle" id="menu-toggle" aria-controls="navigation" aria-expanded="false" aria-label="Open navigation"><i data-lucide="menu"></i></button></div>
   </header>
   <main id="main">
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero-copy">
+        <p class="research-label"><span></span> REPRESENTATION LEARNING / WORLD MODELS</p>
         <h1 id="hero-title"><span class="paper-name">SADL</span>: On the Demand-Supply Geometry<br> of Representation Collapse</h1>
         <div class="paper-authors"><p class="author-list">Junhan Sun<sup>1</sup> <span>Yigui Feng<sup>2</sup></span> <span>Mingzhe Liu<sup>2</sup></span> <span>Haoyan Xu<sup>2</sup></span> <span>Lei Ye<sup>2</sup></span><br><span>Ziqi Han<sup>2</sup></span> <span>Hanru Bai<sup>3</sup></span> <span>Yanzhao Zhang<sup>3</sup></span> <span>Hao Zhao<sup>2,4,†</sup></span> <span>Guofeng Zhang<sup>1,5,†</sup></span></p><p class="affiliations"><span><sup>1</sup> Zhejiang University</span><span><sup>2</sup> RoboParty Lab</span><span><sup>3</sup> Alibaba Group</span><span><sup>4</sup> AIR, Tsinghua University</span><span><sup>5</sup> InSpatio</span></p><p class="corresponding" data-t="authors.corresponding">† Corresponding authors</p></div>
         <div class="resource-links"><a class="button primary" href="assets/paper/SADL.pdf" target="_blank" rel="noopener"><i data-lucide="file-text"></i><span data-t="hero.paper">Paper</span><i data-lucide="arrow-up-right"></i></a><button class="button code-unavailable" disabled title="Code coming soon"><i data-lucide="github"></i><span data-t="hero.code">Code · Coming soon</span></button></div>
         <p class="hero-description" data-t="hero.description">A well-constrained output is only half the story.<br>Preserve the differences the encoder needs to pass on.</p>
       </div>
-      <div class="hero-media"><img src="assets/figures/hero-geometry.webp" alt="Actual learned JEPA-shaped endpoint representations, colored by four control tasks" width="3000" height="676"><p data-t="hero.caption">Different output geometries. One supply–demand correction. <span>Actual learned representations · single-seed glyph experiments</span></p></div>
+      <div class="representation-stage" id="representation-stage">
+        <img class="scene-fallback" src="assets/figures/hero-geometry.webp" alt="Learned glyph-shaped representations from the SADL paper" width="3000" height="676">
+        <canvas id="representation" aria-label="Conceptual three-dimensional representation geometry"></canvas>
+        <div class="scene-label"><span class="scene-signal"></span><span data-t="scene.label">REPRESENTATION SPACE</span></div>
+        <div class="scene-axis" aria-hidden="true">h₁ / h₂ / h₃</div>
+      </div>
+      <div class="scene-toolbar"><div class="scene-modes" role="group" aria-label="Representation geometry"><button data-shape="collapsed" aria-pressed="false" data-t="scene.collapsed">Collapsed</button><button data-shape="expanded" aria-pressed="true" data-t="scene.expanded">Expanded</button></div><p data-t="scene.note">Conceptual animation</p><button id="pause-scene" class="icon-button" aria-label="Pause animation" title="Pause animation" aria-pressed="false"><i data-lucide="pause"></i></button></div>
       <a class="explore-link" href="#insight"><span data-t="hero.explore">Explore the research</span><i data-lucide="arrow-down"></i></a>
     </section>
     <section class="metrics-band"><div class="container metric-grid">
@@ -41,6 +50,7 @@
       <div><p class="metric-label" data-t="metric.rank">Encoder effective rank</p><p class="metric-value">14.5<i data-lucide="arrow-right"></i><em>52.7</em></p><p class="metric-note" data-t="metric.rankNote">Same audit · fixed probe at epoch 1</p></div>
       <div><p class="metric-label" data-t="metric.success">Control success</p><p class="metric-value">66.1<i data-lucide="arrow-right"></i><em>96.3<span>%</span></em></p><p class="metric-note" data-t="metric.successNote">INTACT · Flash · epoch 2 · 3 seeds</p></div>
     </div></section>
+    <section class="section container video-section" id="video"><div class="video-section-heading"><div><p class="eyebrow" data-t="video.label">SADL / FILM</p><h2 data-t="video.title">The story, in motion.</h2></div><span class="availability"><span></span>Coming soon</span></div><div class="video-placeholder" role="img" aria-label="SADL video placeholder, coming soon"><div class="video-corner top-left"></div><div class="video-corner top-right"></div><div class="video-corner bottom-left"></div><div class="video-corner bottom-right"></div><div class="video-wordmark" aria-hidden="true">SADL<span>.</span></div><div class="video-placeholder-caption"><i data-lucide="film"></i><span data-t="video.placeholder">Video coming soon</span></div><span class="video-frame-label" aria-hidden="true">SUPPLY AND DEMAND LOSS / 2026</span></div></section>
     <section class="section container" id="insight">
       <div class="section-heading"><p class="eyebrow" data-t="section.insight">MOTIVATION</p><h2 data-t="insight.title">The output looks better.<br>The encoder can still lose the differences.</h2></div>
       <div class="insight-grid"><div class="prose"><p data-t="insight.p1">In a Joint-Embedding Predictive Architecture, an encoder maps observations to <em>H</em>, and a projector maps <em>H</em> to <em>Z</em>. Prediction and control depend on those representations distinguishing different states.</p><p data-t="insight.p2">From initialization, a component shared by different inputs dominates <em>H</em>. Batch normalization removes the batch mean inside the projector. Losses after the projector therefore cannot correct a common shift in <em>H</em>.</p><p class="strong-line" data-t="insight.p3">The projector can amplify existing differences.<br>It cannot recover information the encoder has lost.</p></div>
@@ -50,6 +60,7 @@
     <section class="section method-section" id="method"><div class="container">
       <div class="section-heading"><p class="eyebrow" data-t="section.method">METHOD</p><h2 data-t="method.title">Retain the differences.<br>Pass them on. Correct only when needed.</h2><p class="section-description" data-t="method.description">Supply And Demand Loss matches what the output demands to what the encoder can retain and transmit.</p></div>
       <div class="method-steps"><article><span class="step-number">01</span><h3 data-t="method.s1title">Read the demand</h3><p data-t="method.s1">Read how well the output satisfies its regularizer and how much sample variation it already contains. Combine these into the demand <em>q</em>.</p><p class="equation">q = √(q<sub>reg</sub> q<sub>exc</sub>)</p></article><article><span class="step-number">02</span><h3 data-t="method.s2title">Measure the weaker supply</h3><p data-t="method.s2">Measure sample variation in <em>H</em> and its transmission to <em>Z</em>. The weaker term determines the available supply <em>k</em>.</p><p class="equation">k = min{k<sub>exc</sub>, k<sub>tr</sub>}</p></article><article><span class="step-number">03</span><h3 data-t="method.s3title">Correct the encoder</h3><p data-t="method.s3">When supply is below demand, apply the one-sided penalty directly to <em>H</em>. Once supply is sufficient, the extra penalty switches off.</p><p class="equation">S = [log(q + ε) − log(k + ε)]<sub>+</sub><sup>2</sup></p></article></div>
+      <div class="supply-flow" aria-hidden="true"><div class="flow-node">H<small>ENCODER</small></div><div class="flow-track"></div><div class="flow-node">P<small>PROJECTOR</small></div><div class="flow-track"></div><div class="flow-node">Z<small>ENDPOINT</small></div></div>
       <div class="gate-demo"><div class="gate-explanation"><span class="small-label" data-t="gate.label">ONE-SIDED CORRECTION</span><h3 data-t="gate.title">How the gate behaves</h3><p data-t="gate.description">The penalty grows with the supply deficit. It is zero when supply reaches demand.</p><p class="figure-note" data-t="gate.note">Illustration of the scalar penalty, not measured training data. Demand is detached during the encoder update.</p></div><div class="gate-controls"><label for="demand"><span data-t="gate.demand">Demand q</span><output id="demand-value" for="demand">0.65</output></label><input id="demand" type="range" min="0.05" max="1" step="0.01" value="0.65"><label for="supply"><span data-t="gate.supply">Supply k</span><output id="supply-value" for="supply">0.30</output></label><input id="supply" type="range" min="0.05" max="1" step="0.01" value="0.30"></div><div class="gate-output" aria-live="polite"><span class="small-label" data-t="gate.penalty">PENALTY S</span><strong id="penalty">0.598</strong><span id="gate-state" class="gate-state">Correction active</span></div></div>
       <div class="method-properties"><span><i data-lucide="check"></i><span data-t="method.property1">No extra trainable parameters</span></span><span><i data-lucide="check"></i><span data-t="method.property2">No auxiliary networks</span></span><span><i data-lucide="check"></i><span data-t="method.property3">Original architecture and inference</span></span></div>
     </div></section>
