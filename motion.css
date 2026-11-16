@@ -60,3 +60,4 @@ body{background:#fff}.site-header{background:#111719f5;color:#edf3f0;border-colo
 .hero-description{color:var(--muted)}
 .hero .explore-link{color:var(--muted)}
 .hero .explore-link:hover{color:var(--green)}
+body .prose em,body .method-steps .equation,body .energy-row>span,body .objective-equation,body .method-details .equation,body .ablation-intro em,body .flow-node{font-family:var(--font)}
