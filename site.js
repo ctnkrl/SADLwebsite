@@ -324,7 +324,7 @@
           const dx = baseX - pointer.x;
           const dy = baseY - pointer.y;
           const distance = Math.hypot(dx, dy);
-          const radius = Math.min(125, Math.max(72, width * .11));
+          const radius = Math.min(190, Math.max(100, width * .17));
           if (distance > 0 && distance < radius) {
             const force = 16 * Math.pow(1 - distance / radius, 2);
             targetX += dx / distance * force;
