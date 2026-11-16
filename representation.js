@@ -8,10 +8,10 @@ const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
 function startScene() {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'low-power', preserveDrawingBuffer: true });
-  renderer.setClearColor(0x111719, 1);
+  renderer.setClearColor(0xffffff, 1);
   renderer.setPixelRatio(Math.min(devicePixelRatio, 1.7));
   const scene = new THREE.Scene();
-  scene.fog = new THREE.Fog(0x111719, 10, 24);
+  scene.fog = new THREE.Fog(0xffffff, 10, 24);
   const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 60);
   camera.position.set(0, 0.3, 11);
   camera.lookAt(0, 0, 0);
@@ -64,7 +64,7 @@ function startScene() {
   geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
   const material = new THREE.PointsMaterial({ size: 0.031, vertexColors: true, transparent: true, opacity: 1, sizeAttenuation: true, depthWrite: false });
   group.add(new THREE.Points(geometry, material));
-  const grid = new THREE.GridHelper(22, 32, 0x2c453b, 0x203028);
+  const grid = new THREE.GridHelper(22, 32, 0xc7d9d1, 0xe3ece8);
   grid.position.y = -1.6;
   grid.material.transparent = true;
   grid.material.opacity = 0.55;
