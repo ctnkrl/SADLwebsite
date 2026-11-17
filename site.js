@@ -11,12 +11,13 @@
   let geometrySelection = "sigreg";
   let geometryPlaying = false;
   let geometryTimer;
+  const energyValues = { H: [3.3, 98.6], Z: [35.5, 99.0] };
 
   const chinese = {
     "curves.all": "全部四个数据集",
     "nav.insight": "问题", "nav.method": "方法", "nav.results": "控制", "nav.geometry": "几何", "nav.images": "图像", "nav.video": "视频", "nav.code": "代码",
     "explorer.regularizers": "正则项", "explorer.glyphs": "字形目标", "explorer.setting": "输出约束", "explorer.success": "第 1 个 epoch 的控制成功率", "explorer.fullFigure": "论文完整原图",
-    "attention.dataset": "数据集", "attention.sample": "样本", "attention.input": "输入",
+    "attention.dataset": "数据集", "attention.sample": "样本", "attention.input": "输入", "energy.readout": "样本差异能量占比：",
     "results.modelFilter": "模型", "results.backendFilter": "编码器后端", "results.allModels": "两种模型", "results.allBackends": "两种后端",
     "scene.label": "表征空间", "scene.collapsed": "坍塌", "scene.expanded": "展开", "scene.note": "概念动画示意",
     "video.label": "SADL / 视频", "video.title": "SADL 视频", "video.placeholder": "视频即将发布",
@@ -182,6 +183,18 @@
     updateAttentionSplit();
   }
 
+  function drawEnergy(level = document.querySelector("[data-energy-level][aria-pressed='true']")?.dataset.energyLevel || "H") {
+    const [baseline, sadl] = energyValues[level];
+    $("#energy-level").textContent = level;
+    $("#energy-baseline").style.width = `${baseline}%`;
+    $("#energy-sadl").style.width = `${sadl}%`;
+    $("#energy-baseline-value").textContent = `${baseline.toFixed(1)}%`;
+    $("#energy-sadl-value").textContent = `${sadl.toFixed(1)}%`;
+    const delta = sadl - baseline;
+    $("#energy-delta").textContent = language === "zh" ? `SADL 提高 ${delta.toFixed(1)} 个百分点` : `+${delta.toFixed(1)} pp with SADL`;
+    $$('[data-energy-level]').forEach(button => button.setAttribute("aria-pressed", String(button.dataset.energyLevel === level)));
+  }
+
   function updateAttentionSplit() {
     const split = Number($("#attention-split").value);
     $("#attention-reveal").style.setProperty("--split", `${split}%`);
@@ -254,10 +267,15 @@
     original.forEach((english, node) => { node.innerHTML = next === "zh" ? chinese[node.dataset.t] || english : english; });
     $("#language").textContent = next === "zh" ? "EN" : "中文";
     $("#language").setAttribute("aria-label", next === "zh" ? "Switch to English" : "切换为中文");
+    $$('[data-energy-level]').forEach(button => {
+      const label = button.dataset.energyLevel === "H" ? (language === "zh" ? "编码器 " : "Encoder ") : (language === "zh" ? "端点 " : "Endpoint ");
+      if (button.firstChild?.nodeType === Node.TEXT_NODE) button.firstChild.textContent = label;
+    });
     drawControls();
     updateGate();
     drawGeometry();
     drawAttention();
+    drawEnergy();
     drawImageCurve();
     syncGeometryPlayback();
     try { localStorage.setItem("sadl-language", next); } catch (_) { /* Storage may be disabled for local files. */ }
@@ -341,6 +359,7 @@
   drawImageCurve();
   ["attention-dataset", "attention-sample"].forEach(id => $("#" + id).addEventListener("change", drawAttention));
   $("#attention-split").addEventListener("input", updateAttentionSplit);
+  $$('[data-energy-level]').forEach(button => button.addEventListener("click", () => drawEnergy(button.dataset.energyLevel)));
   ["demand", "supply"].forEach((id) => $("#" + id).addEventListener("input", updateGate));
   $("#citation-text").textContent = citation;
   $("#copy-citation").addEventListener("click", () => copy(citation));
