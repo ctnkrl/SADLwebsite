@@ -9,8 +9,11 @@
   let toastTimer;
   let geometryFamily = "regularizer";
   let geometrySelection = "sigreg";
+  let geometryPlaying = false;
+  let geometryTimer;
 
   const chinese = {
+    "curves.all": "全部四个数据集",
     "nav.insight": "问题", "nav.method": "方法", "nav.results": "控制", "nav.geometry": "几何", "nav.images": "图像", "nav.video": "视频", "nav.code": "代码",
     "explorer.regularizers": "正则项", "explorer.glyphs": "字形目标", "explorer.setting": "输出约束", "explorer.success": "第 1 个 epoch 的控制成功率", "explorer.fullFigure": "论文完整原图",
     "attention.dataset": "数据集", "attention.sample": "样本", "attention.input": "输入",
@@ -131,6 +134,42 @@
     drawGeometry();
   }
 
+  function syncGeometryPlayback() {
+    clearTimeout(geometryTimer);
+    const button = $("#geometry-play");
+    const label = geometryPlaying
+      ? language === "zh" ? "暂停轮播" : "Pause figure sequence"
+      : language === "zh" ? "播放图形序列" : "Play figure sequence";
+    button.setAttribute("aria-pressed", String(geometryPlaying));
+    button.setAttribute("aria-label", label);
+    button.title = label;
+    button.innerHTML = `<i data-lucide="${geometryPlaying ? "pause" : "play"}"></i>`;
+    window.lucide?.createIcons();
+    if (geometryPlaying && !document.hidden) geometryTimer = setTimeout(() => {
+      stepGeometry(1);
+      syncGeometryPlayback();
+    }, 2800);
+  }
+
+  function stopGeometryPlayback() {
+    geometryPlaying = false;
+    syncGeometryPlayback();
+  }
+
+  function drawImageCurve() {
+    const select = $("#curve-dataset");
+    const combined = select.value === "all";
+    const path = combined ? "assets/figures/image-curves.webp" : `assets/figures/image-curve-${select.value}.webp`;
+    const image = $("#curve-image");
+    image.src = path;
+    image.width = combined ? 3000 : 750;
+    image.height = combined ? 1139 : 1074;
+    image.alt = `${select.selectedOptions[0].textContent} · Accuracy and paired gain · Paper Figure 7`;
+    $("#curve-zoom").dataset.zoom = path;
+    $("#curve-zoom").dataset.caption = image.alt;
+    $(".curve-figure").classList.toggle("is-single-dataset", !combined);
+  }
+
   function drawAttention() {
     const dataset = $("#attention-dataset").value;
     const sample = $("#attention-sample").value;
@@ -219,6 +258,8 @@
     updateGate();
     drawGeometry();
     drawAttention();
+    drawImageCurve();
+    syncGeometryPlayback();
     try { localStorage.setItem("sadl-language", next); } catch (_) { /* Storage may be disabled for local files. */ }
   }
 
@@ -282,13 +323,22 @@
   $$("[data-epoch]").forEach((button) => button.addEventListener("click", () => { epoch = Number(button.dataset.epoch); drawControls(); }));
   ["control-model", "control-backend"].forEach(id => $("#" + id).addEventListener("change", drawControls));
   $$("[data-geometry-family]").forEach(button => button.addEventListener("click", () => {
+    stopGeometryPlayback();
     geometryFamily = button.dataset.geometryFamily;
     geometrySelection = geometryFamily === "glyph" ? "glyph-j" : "sigreg";
     drawGeometry();
   }));
-  $("#geometry-select").addEventListener("change", event => { geometrySelection = event.target.value; drawGeometry(); });
-  $("#geometry-previous").addEventListener("click", () => stepGeometry(-1));
-  $("#geometry-next").addEventListener("click", () => stepGeometry(1));
+  $("#geometry-select").addEventListener("change", event => { stopGeometryPlayback(); geometrySelection = event.target.value; drawGeometry(); });
+  $("#geometry-previous").addEventListener("click", () => { stopGeometryPlayback(); stepGeometry(-1); });
+  $("#geometry-next").addEventListener("click", () => { stopGeometryPlayback(); stepGeometry(1); });
+  $("#geometry-play").addEventListener("click", () => { geometryPlaying = !geometryPlaying; syncGeometryPlayback(); });
+  document.addEventListener("visibilitychange", syncGeometryPlayback);
+  new IntersectionObserver(entries => {
+    if (!entries[0].isIntersecting && geometryPlaying) stopGeometryPlayback();
+  }).observe($(".geometry-explorer"));
+  $("#curve-dataset").addEventListener("change", drawImageCurve);
+  if (matchMedia("(max-width: 700px)").matches) $("#curve-dataset").value = "imagenet";
+  drawImageCurve();
   ["attention-dataset", "attention-sample"].forEach(id => $("#" + id).addEventListener("change", drawAttention));
   $("#attention-split").addEventListener("input", updateAttentionSplit);
   ["demand", "supply"].forEach((id) => $("#" + id).addEventListener("input", updateGate));
@@ -319,6 +369,7 @@
     window.lucide?.createIcons();
   }
   $$("[data-zoom]").forEach((button) => button.addEventListener("click", () => {
+    stopGeometryPlayback();
     $("#dialog-image").src = button.dataset.zoom;
     $("#dialog-image").alt = button.querySelector("img").alt;
     $("#original-figure").href = button.dataset.zoom;
@@ -331,6 +382,22 @@
   $("#figure-size").addEventListener("click", () => setFigureZoom(!dialog.classList.contains("is-zoomed")));
   $("#close-dialog").addEventListener("click", () => dialog.close());
   dialog.addEventListener("close", () => document.body.classList.remove("modal-open"));
+  const figureCanvas = $(".figure-canvas");
+  let figureDrag;
+  figureCanvas.addEventListener("dblclick", () => setFigureZoom(!dialog.classList.contains("is-zoomed")));
+  figureCanvas.addEventListener("pointerdown", event => {
+    if (!dialog.classList.contains("is-zoomed") || event.pointerType !== "mouse" || event.button !== 0) return;
+    event.preventDefault();
+    figureDrag = { x: event.clientX, y: event.clientY, left: figureCanvas.scrollLeft, top: figureCanvas.scrollTop };
+    figureCanvas.setPointerCapture(event.pointerId);
+    figureCanvas.classList.add("is-dragging");
+  });
+  figureCanvas.addEventListener("pointermove", event => {
+    if (!figureDrag) return;
+    figureCanvas.scrollLeft = figureDrag.left - (event.clientX - figureDrag.x);
+    figureCanvas.scrollTop = figureDrag.top - (event.clientY - figureDrag.y);
+  });
+  figureCanvas.addEventListener("lostpointercapture", () => { figureDrag = undefined; figureCanvas.classList.remove("is-dragging"); });
   dialog.addEventListener("click", (event) => {
     const bounds = dialog.getBoundingClientRect();
     if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) dialog.close();

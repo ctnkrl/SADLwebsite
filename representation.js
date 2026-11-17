@@ -80,8 +80,13 @@ function startScene() {
   let last = 0;
   let clock = 0;
   let previousX = 0;
+  let previousY = 0;
   let drag = false;
   let dragRotation = 0;
+  let dragTilt = 0;
+  stage.tabIndex = 0;
+  stage.setAttribute('aria-label', 'Representation view');
+  stage.title = 'Drag to rotate; focus and use the mouse wheel to zoom';
   function setZoom(value) {
     camera.zoom = THREE.MathUtils.clamp(value, 0.8, 1.8);
     camera.updateProjectionMatrix();
@@ -99,7 +104,7 @@ function startScene() {
     camera.updateProjectionMatrix();
     renderer.setSize(width, height, false);
     group.scale.setScalar(width < 700 ? 0.82 : 1);
-    group.rotation.y = THREE.MathUtils.clamp(group.rotation.y, -0.24, 0.24);
+    group.rotation.y = THREE.MathUtils.clamp(group.rotation.y, -0.65, 0.65);
     render(performance.now());
   }
   function draw(time) {
@@ -116,9 +121,9 @@ function startScene() {
     }
     geometry.attributes.position.needsUpdate = true;
     const rotation = paused ? 0 : Math.sin(clock * 0.22) * 0.12;
-    const targetRotation = THREE.MathUtils.clamp(rotation + pointerX * 0.16 + dragRotation, -0.24, 0.24);
-    group.rotation.y += (targetRotation - group.rotation.y) * 0.06;
-    group.rotation.x += (pointerY * 0.06 - group.rotation.x) * 0.06;
+    const targetRotation = THREE.MathUtils.clamp(rotation + pointerX * 0.16 + dragRotation, -0.65, 0.65);
+    group.rotation.y += (targetRotation - group.rotation.y) * (paused ? 1 : 0.06);
+    group.rotation.x += (THREE.MathUtils.clamp(pointerY * 0.06 + dragTilt, -0.35, 0.35) - group.rotation.x) * (paused ? 1 : 0.06);
     renderer.render(scene, camera);
     canvas.dataset.frames = String(++frame);
   }
@@ -140,12 +145,29 @@ function startScene() {
     const bounds = stage.getBoundingClientRect();
     pointerX = (event.clientX - bounds.left) / bounds.width - 0.5;
     pointerY = (event.clientY - bounds.top) / bounds.height - 0.5;
-    if (drag) { dragRotation = THREE.MathUtils.clamp(dragRotation + (event.clientX - previousX) * 0.003, -0.24, 0.24); previousX = event.clientX; }
+    if (drag) {
+      dragRotation = THREE.MathUtils.clamp(dragRotation + (event.clientX - previousX) * 0.003, -0.65, 0.65);
+      dragTilt = THREE.MathUtils.clamp(dragTilt + (event.clientY - previousY) * 0.003, -0.35, 0.35);
+      previousX = event.clientX;
+      previousY = event.clientY;
+    }
     wake();
   });
   stage.addEventListener('pointerleave', () => { pointerX = 0; pointerY = 0; drag = false; });
-  stage.addEventListener('pointerdown', event => { drag = true; previousX = event.clientX; stage.setPointerCapture(event.pointerId); });
+  stage.addEventListener('pointerdown', event => { drag = true; previousX = event.clientX; previousY = event.clientY; stage.setPointerCapture(event.pointerId); });
   stage.addEventListener('pointerup', () => { drag = false; });
+  stage.addEventListener('pointercancel', () => { drag = false; });
+  stage.addEventListener('wheel', event => {
+    if (document.activeElement !== stage) return;
+    event.preventDefault();
+    setZoom(camera.zoom * Math.exp(-event.deltaY * 0.001));
+  }, { passive: false });
+  stage.addEventListener('keydown', event => {
+    if (['+', '=', '-'].includes(event.key)) {
+      event.preventDefault();
+      setZoom(camera.zoom + (event.key === '-' ? -0.2 : 0.2));
+    }
+  });
   shapeButtons.forEach(button => button.addEventListener('click', () => {
     target = button.dataset.shape === 'collapsed' ? 0 : 1;
     shapeButtons.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
@@ -168,6 +190,7 @@ function startScene() {
     pointerX = 0;
     pointerY = 0;
     dragRotation = 0;
+    dragTilt = 0;
     group.rotation.set(0, 0, 0);
     setZoom(1);
   });
