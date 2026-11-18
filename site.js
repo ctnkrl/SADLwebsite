@@ -14,11 +14,11 @@
   const energyValues = { H: [3.3, 98.6], Z: [35.5, 99.0] };
 
   const chinese = {
-    'geometry.paperView': '论文原图',
+    'geometry.paperView': '原图',
     'geometry.pcaNote': '留出观测的端点表征 · 训练 seed 0 · 4,096 个观测 · 四任务联合拟合 PCA。左侧控制成功率为三个训练 seed 的平均。',
     "curves.all": "全部四个数据集",
     "nav.insight": "问题", "nav.method": "方法", "nav.results": "控制", "nav.geometry": "几何", "nav.images": "图像", "nav.video": "视频", "nav.code": "代码",
-    "explorer.regularizers": "正则项", "explorer.glyphs": "字形目标", "explorer.setting": "输出约束", "explorer.success": "第 1 个 epoch 的控制成功率", "explorer.fullFigure": "论文完整原图",
+    "explorer.regularizers": "正则项", "explorer.glyphs": "字形目标", "explorer.setting": "输出约束", "explorer.success": "第 1 个 epoch 的控制成功率", "explorer.fullFigure": "全部输出几何",
     "attention.dataset": "数据集", "attention.sample": "样本", "attention.input": "输入", "energy.readout": "样本差异能量占比：",
     "results.modelFilter": "模型", "results.backendFilter": "编码器后端", "results.allModels": "两种模型", "results.allBackends": "两种后端",
     "scene.label": "表征空间", "scene.collapsed": "坍塌", "scene.expanded": "展开", "scene.note": "概念动画示意",
@@ -39,7 +39,7 @@
     "insight.variation": "剩余的差异主要依靠任务梯度增长，且集中在少数方向上。投影器可以重新混合和放大已有差异，以满足需求正则项的要求，但无法恢复 <em>H</em> 已经丢失的信息。",
     "insight.p3": "在公共分量方向上，SADL 提供其他损失所缺少的非零梯度；在其余方向上，它使较弱的差异方向更快增长。",
     "insight.chartTitle": "样本差异的能量占比",
-    "insight.note": "Flash + SIGReg；跨任务及 10 个训练 seed 的固定 probe 中位数。灰色部分为公共分量的能量。见论文表 1。",
+    "insight.note": "Flash + SIGReg；跨任务及 10 个训练 seed 的固定 probe 中位数。灰色部分为公共分量的能量。",
     "insight.figcaption": "保留原有任务损失和输出正则项。SADL 直接在编码器表征上增加供给正则项。",
     "method.title": "需求容量与供给容量",
     "method.description": "SADL 读取停止梯度的需求容量 <em>q</em>，测量 <em>H</em> 的供给容量 <em>k</em>，仅在 <em>k</em> &lt; <em>q</em> 时通过供给正则项约束 <em>H</em>。",
@@ -50,7 +50,7 @@
     "method.objectiveNote": "任务损失和选定的输出正则项仍按原方式训练。在新增项中，sg 阻止梯度经由 <em>Z</em> 反传，使供给约束直接作用于 <em>H</em>。",
     "method.adaptiveTitle": "自适应需求",
     "method.adaptiveNote": "常数需求需要针对每个设置重新调节，而自适应 <em>q</em> 无需调节。在五组控制和图像实验设置中，自适应 <em>q</em> 与最佳常数的表现差异均处于 seed 波动范围内。",
-    "method.adaptiveSource": "论文 · 表 3", "method.details": "需求与供给的定义",
+    "method.details": "需求与供给的定义",
     "method.demandFormula": "从输出读取需求", "method.supplyFormula": "测量编码器供给",
     "method.demandDefinition": "<em>q</em><sub>reg</sub> 读取输出对正则项的满足程度；<em>q</em><sub>exc</sub> 读取 <em>Z</em> 中的样本差异。",
     "method.supplyDefinition": "<em>k</em><sub>exc</sub> 衡量 <em>H</em> 中样本差异的能量占比和方向分布；<em>k</em><sub>tr</sub> 通过正则化典型相关衡量 <em>H</em> 与 <em>Z</em> 的线性关联。",
@@ -63,17 +63,16 @@
     "results.controlTitle": "训练一个和两个 epoch 后的控制成功率",
     "results.controlTakeaway": "在两种模型、两种后端下，SADL 训练一个 epoch 的成功率均超过基线训练两个 epoch 的结果。第 2 个 epoch，INTACT + SADL 在 MATH 和 Flash 下的平均成功率均达到 96.3%。",
     "results.controlNote": "采用 SIGReg，报告 3 个训练 seed 的均值 ± 样本标准差。INTACT 使用免搜索的 Direct 控制；LeWM 使用 Pure-CEM。每组对照的后端、更新预算和评估方式均一致。基线保留任务损失和输出正则项，不增加 SADL。",
-    "results.controlSource": "论文 · 表 40",
     "results.data": "准确数值与实验设置", "results.tableCaption": "四任务宏平均成功率（%）",
     "results.imageTitle": "图像任务泛化", "results.imageDescription": "除控制任务外，我们还在 ImageNet-LT、Galaxy10、CIFAR-10 和 Imagenette 上，以相同预算和需求正则项评估 SADL。",
-    "images.attentionTitle": "图像实验中的注意力示例", "images.attentionNote": "论文选取的输入与注意力图对照，依次为输入、VISReg 基线和 SADL + VISReg。见论文图 3。",
+    "images.attentionTitle": "图像实验中的注意力示例", "images.attentionNote": "输入图像，以及 VISReg 与 SADL + VISReg 的注意力图对照。",
     "results.imageTakeaway": "SADL 在四个数据集上都改善了早期学习。Imagenette 在 epoch 20 提高 8.91 个百分点，到 epoch 800 时差距缩小至 0.44 个百分点。CIFAR-10 的主要收益也在早期，最终 epoch 的变化很小。",
-    "results.imageNote": "上排为分类精度，下排为 SADL 相对配对基线的精度差，单位为百分点。依次报告 3、3、10、7 个 seed 的均值 ± 标准差。CIFAR-10 使用独立留出的 ridge 读出，其余数据集使用在线分类头。见论文图 7。",
+    "results.imageNote": "上排为分类精度，下排为 SADL 相对配对基线的精度差，单位为百分点。依次报告 3、3、10、7 个 seed 的均值 ± 标准差。CIFAR-10 使用独立留出的 ridge 读出，其余数据集使用在线分类头。",
     "results.updatesTitle": "Imagenette · 达到基线最终精度所需更新数", "results.updatesNote": "减少约 23% 的更新 · 3 个训练 seed 的中位数",
     "results.ltTitle": "ImageNet-LT · 达到基线最终精度 90% 所需更新数", "results.ltNote": "减少约 10% 的更新 · 3 个训练 seed 的中位数",
     "results.targetNote": "达到目标精度所需的更新数，来自另一组 3 个 seed 的对照实验。每个目标均以该组基线的最终精度定义。",
     "geometry.title": "跨需求正则项的适配", "geometry.description": "我们使用八种需求正则项测试 SADL，而非假设单一高斯目标。训练一个 epoch 后，八种设置下 INTACT 的免搜索 Direct 成功率均超过 92%，其中七种达到 95.03–95.81%。",
-    "geometry.note": "真实训练得到的表征。八种正则项展示三维 PCA 视图，成功率是 3 个 seed 的四任务均值；独立训练的二维字形目标，成功率来自单个 seed。颜色区分四个控制任务。见论文图 5、表 5。",
+    "geometry.note": "真实训练得到的表征。八种正则项展示三维 PCA 视图，成功率是 3 个 seed 的四任务均值；独立训练的二维字形目标，成功率来自单个 seed。颜色区分四个控制任务。",
     "geometry.conclusion": "Student-t、GMM-Ring、Sphere shell 和 VIC moments 涵盖非高斯或未指定密度的约束。独立训练的字形目标进一步展示了对不同端点几何的适配。",
     "code.title": "代码即将发布。", "code.status": "Coming soon",
     "citation.title": "引用", "citation.description": "SADL: On the Demand-Supply Geometry of Representation Collapse",
@@ -121,9 +120,9 @@
       image.src = path;
       if (!matchMedia("(prefers-reduced-motion: reduce)").matches) image.animate([{ opacity: .55 }, { opacity: 1 }], { duration: 220, easing: "ease-out" });
     }
-    image.alt = `${selected.label} · INTACT epoch 1 · Paper Figure 5`;
+    image.alt = `${selected.label} · INTACT epoch 1`;
     $("#geometry-panel").dataset.zoom = path;
-    $("#geometry-panel").dataset.caption = `${selected.label} · ${selected.success.toFixed(2)}% · Paper Figure 5`;
+    $("#geometry-panel").dataset.caption = `${selected.label} · ${selected.success.toFixed(2)}%`;
     window.dispatchEvent(new CustomEvent('sadl-geometry-change', { detail: { id: selected.id, label: selected.label, language } }));
     for (const [id, en, zh] of [["geometry-previous", "Previous setting", "上一项"], ["geometry-next", "Next setting", "下一项"]]) {
       $("#" + id).title = language === "zh" ? zh : en;
@@ -168,7 +167,7 @@
     image.src = path;
     image.width = combined ? 3000 : 750;
     image.height = combined ? 1139 : 1074;
-    image.alt = `${select.selectedOptions[0].textContent} · Accuracy and paired gain · Paper Figure 7`;
+    image.alt = `${select.selectedOptions[0].textContent} · Accuracy and paired gain`;
     $("#curve-zoom").dataset.zoom = path;
     $("#curve-zoom").dataset.caption = image.alt;
     $(".curve-figure").classList.toggle("is-single-dataset", !combined);
@@ -181,7 +180,7 @@
       const image = $("#attention-" + kind + "-image");
       image.src = `assets/figures/attention-${dataset}-${sample}-${kind}.webp`;
       const name = dataset === "imagenet" ? "ImageNet-LT" : "Galaxy10";
-      image.alt = `${name} · sample ${sample} · ${kind === "input" ? "Input" : kind === "baseline" ? "VISReg" : "SADL + VISReg"} · Paper Figure 3`;
+      image.alt = `${name} · sample ${sample} · ${kind === "input" ? "Input" : kind === "baseline" ? "VISReg" : "SADL + VISReg"}`;
     }
     updateAttentionSplit();
   }
@@ -289,27 +288,27 @@
     ctx.lineWidth = 1;
     for (let i = 0; i <= 4; i++) {
       const value = maxY * i / 4;
-      ctx.strokeStyle = '#ffffff15';
+      ctx.strokeStyle = '#dfe5e2';
       ctx.beginPath(); ctx.moveTo(box.left, y(value)); ctx.lineTo(box.right, y(value)); ctx.stroke();
-      ctx.fillStyle = '#abc0b1'; ctx.textAlign = 'right';
+      ctx.fillStyle = '#687474'; ctx.textAlign = 'right';
       ctx.fillText(Number(value.toFixed(2)).toString(), box.left - 9, y(value) + 4);
     }
     ctx.textAlign = 'center';
     for (const value of [0.05, 0.25, 0.5, 0.75, 1]) ctx.fillText(value.toString(), x(value), box.bottom + 23);
     ctx.textAlign = 'left'; ctx.fillText('S', box.left, 18);
     ctx.textAlign = 'right'; ctx.fillText(language === 'zh' ? '供给 k' : 'Supply k', box.right, height - 3);
-    ctx.setLineDash([4, 5]); ctx.strokeStyle = '#ed8d9f';
+    ctx.setLineDash([4, 5]); ctx.strokeStyle = '#b54b69';
     ctx.beginPath(); ctx.moveTo(x(q), box.top); ctx.lineTo(x(q), box.bottom); ctx.stroke();
-    ctx.setLineDash([]); ctx.textAlign = 'center'; ctx.fillStyle = '#ed8d9f';
+    ctx.setLineDash([]); ctx.textAlign = 'center'; ctx.fillStyle = '#b54b69';
     ctx.fillText(`q = ${q.toFixed(2)}`, Math.max(box.left + 28, Math.min(box.right - 28, x(q))), 18);
     ctx.beginPath(); ctx.moveTo(x(0.05), box.bottom);
     for (let i = 0; i <= 200; i++) { const value = 0.05 + i / 200 * 0.95; ctx.lineTo(x(value), y(penalty(value))); }
-    ctx.lineTo(x(1), box.bottom); ctx.closePath(); ctx.fillStyle = '#6ce2ba12'; ctx.fill();
+    ctx.lineTo(x(1), box.bottom); ctx.closePath(); ctx.fillStyle = '#087f6f12'; ctx.fill();
     ctx.beginPath();
     for (let i = 0; i <= 200; i++) { const value = 0.05 + i / 200 * 0.95; if (i === 0) ctx.moveTo(x(value), y(penalty(value))); else ctx.lineTo(x(value), y(penalty(value))); }
-    ctx.strokeStyle = '#6ce2ba'; ctx.lineWidth = 2.5; ctx.stroke();
+    ctx.strokeStyle = '#087f6f'; ctx.lineWidth = 2.5; ctx.stroke();
     ctx.beginPath(); ctx.arc(x(k), y(penalty(k)), 6, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill();
-    ctx.strokeStyle = '#6ce2ba'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.strokeStyle = '#087f6f'; ctx.lineWidth = 2; ctx.stroke();
     canvas.setAttribute('aria-label', language === 'zh' ? `供需惩罚曲线，需求 ${q.toFixed(2)}，供给 ${k.toFixed(2)}，惩罚 ${penalty(k).toFixed(3)}` : `Supply penalty curve: demand ${q.toFixed(2)}, supply ${k.toFixed(2)}, penalty ${penalty(k).toFixed(3)}`);
   }
 
