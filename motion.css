@@ -111,6 +111,22 @@ body .prose em,body .method-steps .equation,body .energy-row>span,body .objectiv
 .attention-reveal input{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;opacity:0;cursor:ew-resize}
 .attention-reveal:focus-within{outline:3px solid var(--green);outline-offset:4px}
 .scene-view-controls{display:flex;gap:8px}.scene-view-controls .icon-button{width:38px;height:38px}.scene-view-controls .icon-button:disabled{opacity:.35;cursor:default}
+#gate-explorer{grid-template-columns:minmax(240px,.65fr) minmax(0,1.35fr);gap:18px 60px;align-items:start;border-color:#ffffff25;margin-top:35px;padding:30px 0}
+#gate-explorer .gate-explanation{grid-column:1 / -1;max-width:850px;margin-bottom:10px}
+#gate-explorer .gate-explanation h3{font-size:23px;margin:8px 0 12px}
+#gate-explorer .gate-explanation>p{font-size:15px;line-height:1.8;color:#abc0b1}
+#gate-explorer .gate-explanation>.figure-note{font-size:13px;margin-top:8px}
+.gate-curve{grid-column:2;grid-row:2 / 4;min-width:0;margin:0}
+#gate-curve{display:block;width:100%;height:285px;cursor:ew-resize;touch-action:none}
+.gate-curve figcaption{font-size:17px;text-align:center;color:#dcf3e5;margin-top:15px}
+#gate-explorer .gate-controls{grid-column:1;grid-row:2}
+#gate-explorer .gate-controls label,#gate-explorer .gate-controls output{font-size:16px;font-family:var(--font)}
+#gate-explorer .gate-state{font-size:14px;padding:5px 9px}
+#gate-explorer .gate-output{grid-column:1;grid-row:3;text-align:left;border:0;padding:5px 0 0;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+#gate-explorer .gate-output>.small-label{width:100%;font-size:12px}
+#gate-explorer .gate-output strong{font-size:36px;margin:0;width:100%}
+#gate-explorer .gate-output .icon-button{margin-left:auto;border-color:#ffffff25;color:#abc0b1;width:36px;height:36px}
+@media(max-width:700px){#gate-explorer{grid-template-columns:minmax(0,1fr);gap:22px}#gate-explorer .gate-explanation{grid-column:1}#gate-explorer .gate-controls{grid-column:1;grid-row:2}#gate-explorer .gate-output{grid-column:1;grid-row:3}#gate-explorer .gate-output strong{width:auto;margin-right:10px}.gate-curve{grid-column:1;grid-row:4}#gate-curve{height:270px}.gate-curve figcaption{font-size:16px}}
 .energy-focus{display:flex;gap:7px;margin:22px 0 14px}.energy-focus button{border:1px solid var(--line);background:transparent;border-radius:3px;color:var(--muted);font:inherit;font-size:12px;padding:7px 12px;cursor:pointer}.energy-focus button[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:#fff}.energy-readout{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:16px;color:var(--muted);font-size:13px}.energy-readout strong{font-family:var(--font);font-size:23px;color:var(--ink)}.energy-readout p{margin:0;color:var(--green);font-size:13px;font-variant-numeric:tabular-nums}.energy-plot .energy-row .fill{transition:width .45s cubic-bezier(.16,1,.3,1)}
 .curve-controls{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-top:30px}.curve-controls .field-label{margin:0}.curve-controls select{width:220px}.curve-legend{display:flex;gap:22px;font-size:15px}.curve-legend>span{display:flex;align-items:center;gap:8px}.curve-key{display:inline-block;width:25px;height:3px}.curve-key.baseline{background:#2699c5}.curve-key.sadl{background:#e56d92}#image-panel .curve-figure{margin-top:18px}.curve-figure.is-single-dataset{max-width:600px;margin-inline:auto}.is-zoomed .figure-canvas{cursor:grab}.is-zoomed .figure-canvas.is-dragging{cursor:grabbing}.figure-canvas img{user-select:none;-webkit-user-drag:none}.representation-stage:focus-visible{outline:2px solid var(--green);outline-offset:4px}
 @media(max-width:1000px){.geometry-explorer{gap:28px;grid-template-columns:minmax(230px,.8fr) minmax(0,1.2fr)}.attention-view{gap:26px}}

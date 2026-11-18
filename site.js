@@ -259,6 +259,55 @@
       ? language === "zh" ? "供给已满足需求" : "Supply sufficient"
       : language === "zh" ? "对编码器施加约束" : "Correction active";
     $("#gate-state").classList.toggle("sufficient", supply >= demand);
+    const resetLabel = language === 'zh' ? '重置供给与需求' : 'Reset demand and supply';
+    $("#gate-reset").title = resetLabel;
+    $("#gate-reset").setAttribute('aria-label', resetLabel);
+    drawGateCurve();
+  }
+
+  function drawGateCurve() {
+    const canvas = $("#gate-curve");
+    const width = canvas.clientWidth;
+    if (!width) return;
+    const height = canvas.clientHeight;
+    const scale = Math.min(devicePixelRatio || 1, 2);
+    canvas.width = Math.round(width * scale);
+    canvas.height = Math.round(height * scale);
+    const ctx = canvas.getContext("2d");
+    ctx.scale(scale, scale);
+    const q = Number($("#demand").value);
+    const k = Number($("#supply").value);
+    const penalty = value => Math.max(Math.log(q + 1e-6) - Math.log(value + 1e-6), 0) ** 2;
+    const maxY = Math.max(1, Math.ceil(penalty(0.05)));
+    const box = { left: 42, top: 32, right: width - 20, bottom: height - 45 };
+    const x = value => box.left + (value - 0.05) / 0.95 * (box.right - box.left);
+    const y = value => box.bottom - value / maxY * (box.bottom - box.top);
+    ctx.font = '14px "Times New Roman", "Microsoft YaHei", serif';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 4; i++) {
+      const value = maxY * i / 4;
+      ctx.strokeStyle = '#ffffff15';
+      ctx.beginPath(); ctx.moveTo(box.left, y(value)); ctx.lineTo(box.right, y(value)); ctx.stroke();
+      ctx.fillStyle = '#abc0b1'; ctx.textAlign = 'right';
+      ctx.fillText(Number(value.toFixed(2)).toString(), box.left - 9, y(value) + 4);
+    }
+    ctx.textAlign = 'center';
+    for (const value of [0.05, 0.25, 0.5, 0.75, 1]) ctx.fillText(value.toString(), x(value), box.bottom + 23);
+    ctx.textAlign = 'left'; ctx.fillText('S', box.left, 18);
+    ctx.textAlign = 'right'; ctx.fillText(language === 'zh' ? '供给 k' : 'Supply k', box.right, height - 3);
+    ctx.setLineDash([4, 5]); ctx.strokeStyle = '#ed8d9f';
+    ctx.beginPath(); ctx.moveTo(x(q), box.top); ctx.lineTo(x(q), box.bottom); ctx.stroke();
+    ctx.setLineDash([]); ctx.textAlign = 'center'; ctx.fillStyle = '#ed8d9f';
+    ctx.fillText(`q = ${q.toFixed(2)}`, Math.max(box.left + 28, Math.min(box.right - 28, x(q))), 18);
+    ctx.beginPath(); ctx.moveTo(x(0.05), box.bottom);
+    for (let i = 0; i <= 200; i++) { const value = 0.05 + i / 200 * 0.95; ctx.lineTo(x(value), y(penalty(value))); }
+    ctx.lineTo(x(1), box.bottom); ctx.closePath(); ctx.fillStyle = '#6ce2ba12'; ctx.fill();
+    ctx.beginPath();
+    for (let i = 0; i <= 200; i++) { const value = 0.05 + i / 200 * 0.95; if (i === 0) ctx.moveTo(x(value), y(penalty(value))); else ctx.lineTo(x(value), y(penalty(value))); }
+    ctx.strokeStyle = '#6ce2ba'; ctx.lineWidth = 2.5; ctx.stroke();
+    ctx.beginPath(); ctx.arc(x(k), y(penalty(k)), 6, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill();
+    ctx.strokeStyle = '#6ce2ba'; ctx.lineWidth = 2; ctx.stroke();
+    canvas.setAttribute('aria-label', language === 'zh' ? `供需惩罚曲线，需求 ${q.toFixed(2)}，供给 ${k.toFixed(2)}，惩罚 ${penalty(k).toFixed(3)}` : `Supply penalty curve: demand ${q.toFixed(2)}, supply ${k.toFixed(2)}, penalty ${penalty(k).toFixed(3)}`);
   }
 
   function setLanguage(next) {
@@ -361,6 +410,26 @@
   $("#attention-split").addEventListener("input", updateAttentionSplit);
   $$('[data-energy-level]').forEach(button => button.addEventListener("click", () => drawEnergy(button.dataset.energyLevel)));
   ["demand", "supply"].forEach((id) => $("#" + id).addEventListener("input", updateGate));
+  $("#gate-reset").addEventListener("click", () => {
+    $("#demand").value = '0.65'; $("#supply").value = '0.30'; updateGate();
+  });
+  new ResizeObserver(drawGateCurve).observe($("#gate-curve"));
+  function setSupplyFromPointer(event) {
+    const bounds = $("#gate-curve").getBoundingClientRect();
+    const value = 0.05 + (event.clientX - bounds.left - 42) / (bounds.width - 62) * 0.95;
+    $("#supply").value = Math.max(0.05, Math.min(1, value)).toFixed(2);
+    updateGate();
+  }
+  $("#gate-curve").addEventListener("pointerdown", event => {
+    if (event.button !== 0) return;
+    $("#gate-curve").setPointerCapture(event.pointerId); setSupplyFromPointer(event);
+  });
+  $("#gate-curve").addEventListener("pointermove", event => {
+    if ($("#gate-curve").hasPointerCapture(event.pointerId)) setSupplyFromPointer(event);
+  });
+  $("#gate-curve").addEventListener("pointerup", event => {
+    if ($("#gate-curve").hasPointerCapture(event.pointerId)) $("#gate-curve").releasePointerCapture(event.pointerId);
+  });
   $("#citation-text").textContent = citation;
   $("#copy-citation").addEventListener("click", () => copy(citation));
 
