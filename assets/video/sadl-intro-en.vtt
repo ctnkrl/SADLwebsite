@@ -1,0 +1,127 @@
+WEBVTT
+
+00:00:00.852 --> 00:00:06.181
+SADL addresses a simple question: can a well regularized output still
+
+00:00:06.196 --> 00:00:07.630
+hide a degraded encoder?
+
+00:00:07.918 --> 00:00:11.776
+In joint embedding predictive architectures, the answer is yes.
+
+00:00:13.743 --> 00:00:16.044
+An encoder maps observations to H.
+
+00:00:16.345 --> 00:00:21.019
+A projector maps H to Z, where regularization is usually applied.
+
+00:00:21.333 --> 00:00:25.368
+Prediction and control depend on the distinctions the encoder retains,
+
+00:00:25.529 --> 00:00:27.932
+not just the shape of the projected output.
+
+00:00:29.951 --> 00:00:34.005
+From initialization, a component shared by different inputs dominates
+
+00:00:34.020 --> 00:00:34.574
+H.
+
+00:00:34.875 --> 00:00:38.724
+In a projector with training time batch normalization, adding the same
+
+00:00:38.739 --> 00:00:42.584
+component to every sample leaves Z unchanged.
+
+00:00:42.885 --> 00:00:47.061
+Losses computed from Z therefore cannot correct this shared direction.
+
+00:00:49.044 --> 00:00:54.348
+SADL keeps the original objective and adds a Supply Regularizer directly
+
+00:00:54.363 --> 00:00:55.121
+on H.
+
+00:00:55.422 --> 00:00:59.432
+It reads demand from the output and measures two forms of supply:
+
+00:00:59.835 --> 00:01:03.769
+sample variation in the encoder, and its transmission to the output.
+
+00:01:05.753 --> 00:01:08.118
+The weaker supply term determines capacity.
+
+00:01:08.431 --> 00:01:12.722
+When supply is below demand, the additional loss corrects the encoder.
+
+00:01:13.023 --> 00:01:16.421
+Once supply meets demand, the penalty becomes zero.
+
+00:01:16.735 --> 00:01:20.432
+The demand is detached during this correction, so the added gradient
+
+00:01:20.447 --> 00:01:22.148
+acts directly on H.
+
+00:01:24.116 --> 00:01:29.190
+In a ten seed LeWorldModel audit with Flash attention and SIGReg, the
+
+00:01:29.205 --> 00:01:31.966
+collapse rate falls from fifty percent to zero.
+
+00:01:32.267 --> 00:01:36.984
+At epoch one, sample variation rises from three point three to ninety
+
+00:01:36.999 --> 00:01:39.657
+eight point six percent of encoder energy.
+
+00:01:41.641 --> 00:01:45.236
+The control gains persist with matched attention backends and training
+
+00:01:45.251 --> 00:01:45.893
+budgets.
+
+00:01:46.194 --> 00:01:51.447
+At epoch two, INTACT with SADL reaches ninety six point three percent
+
+00:01:51.462 --> 00:01:56.161
+mean success under both MATH and Flash, across four control tasks.
+
+00:01:58.145 --> 00:02:01.122
+The same correction supports different output constraints.
+
+00:02:01.423 --> 00:02:05.655
+After one epoch, all eight tested regularizers give INTACT more than
+
+00:02:05.670 --> 00:02:08.137
+ninety two percent mean control success.
+
+00:02:08.438 --> 00:02:12.525
+These rotating point clouds show actual learned representations.
+
+00:02:12.839 --> 00:02:17.448
+Separately trained glyph targets illustrate further geometric flexibility.
+
+00:02:19.425 --> 00:02:23.728
+Beyond control, SADL improves early image learning.
+
+00:02:24.029 --> 00:02:28.045
+On Imagenette, it reaches the baseline's final accuracy with about
+
+00:02:28.060 --> 00:02:32.147
+twenty three percent fewer updates in a separate three seed comparison.
+
+00:02:32.448 --> 00:02:35.999
+On CIFAR-10, the main benefit is early in training.
+
+00:02:37.956 --> 00:02:42.451
+SADL matches what the output demands with what the encoder can retain
+
+00:02:42.484 --> 00:02:43.357
+and transmit.
+
+00:02:43.658 --> 00:02:47.890
+It adds no trainable parameters, auxiliary networks, or changes to
+
+00:02:47.905 --> 00:02:49.160
+the model architecture.

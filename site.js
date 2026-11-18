@@ -22,7 +22,7 @@
     "attention.dataset": "数据集", "attention.sample": "样本", "attention.input": "输入", "energy.readout": "样本差异能量占比：",
     "results.modelFilter": "模型", "results.backendFilter": "编码器后端", "results.allModels": "两种模型", "results.allBackends": "两种后端",
     "scene.label": "表征空间", "scene.collapsed": "坍塌", "scene.expanded": "展开", "scene.note": "概念动画示意",
-    "video.label": "SADL / 视频", "video.title": "SADL 视频", "video.placeholder": "视频即将发布",
+    "video.label": "SADL / 视频", "video.title": "SADL 视频", "video.download": "下载视频",
     "hero.description": "自适应、单边的供给正则项，<br>用于稳定的表征学习。",
     "hero.paper": "论文", "hero.code": "代码 · Coming soon",
     "hero.caption": "不同的输出几何，同一套供需约束。<span>真实训练得到的表征 · 单 seed 字形目标实验</span>",
@@ -383,7 +383,7 @@
         reveal.unobserve(entry.target);
       });
     }, { threshold: 0.08 });
-    $$(".section-heading, .insight-grid, .wide-figure, .method-steps, .gate-demo, .video-placeholder, .geometry-figure").forEach(element => {
+    $$(".section-heading, .insight-grid, .wide-figure, .method-steps, .gate-demo, .sadl-video, .geometry-figure").forEach(element => {
       element.classList.add("reveal");
       reveal.observe(element);
     });

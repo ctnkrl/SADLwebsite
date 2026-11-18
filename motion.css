@@ -150,3 +150,4 @@ main>section[class]{background:var(--section-bg)}
 main>section.container{position:relative;isolation:isolate}
 main>section.container:before{content:"";position:absolute;z-index:-1;top:0;bottom:0;left:50%;width:100vw;transform:translateX(-50%);background:var(--section-bg)}
 .video-placeholder{background-color:#edf4fa}
+.sadl-video{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:contain;background:#fff;border:1px solid var(--line)}
