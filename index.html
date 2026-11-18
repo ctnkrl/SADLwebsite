@@ -12,9 +12,10 @@
   <title>SADL | On the Demand-Supply Geometry of Representation Collapse</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="motion.css?v=gate-1118">
+  <link rel="stylesheet" href="motion.css?v=pca-1118">
   <script src="assets/vendor/lucide.min.js" defer=""></script>
-  <script src="site.js?v=gate-1118" defer=""></script>
+  <script src="site.js?v=pca-1118" defer=""></script>
+  <script type="module" src="geometry.js?v=pca-1118"></script>
   <script type="module" src="representation.js?v=energy-view-1117"></script>
 </head>
 <body>
@@ -80,7 +81,13 @@
             <div class="chart-legend geometry-legend"><span><b class="key" style="background:#dc4960"></b>PushT</span><span><b class="key" style="background:#45a38a"></b>Cube</span><span><b class="key" style="background:#3f7cc4"></b>Reacher</span><span><b class="key" style="background:#d5a635"></b>TwoRoom</span></div>
             <div class="explorer-pagination"><button id="geometry-previous" type="button" class="icon-button" title="Previous setting" aria-label="Previous setting"><i data-lucide="arrow-left"></i></button><span id="geometry-position">1 / 8</span><button id="geometry-next" type="button" class="icon-button" title="Next setting" aria-label="Next setting"><i data-lucide="arrow-right"></i></button><button id="geometry-play" type="button" class="icon-button" title="Play figure sequence" aria-label="Play figure sequence" aria-pressed="false"><i data-lucide="play"></i></button></div>
           </div>
-          <button id="geometry-panel" class="figure-zoom geometry-panel" data-zoom="assets/figures/geometry-sigreg.webp" data-caption="SIGReg · Paper Figure 5" aria-label="Enlarge selected representation"><img id="geometry-panel-image" src="assets/figures/geometry-sigreg.webp" alt="SIGReg representation from paper Figure 5" width="750" height="720" loading="lazy"><span class="zoom-indicator"><i data-lucide="expand"></i></span></button>
+          <div class="geometry-view">
+            <div class="geometry-view-toolbar"><div class="segmented" role="group" aria-label="Geometry view"><button data-geometry-view="3d" aria-pressed="true">3D</button><button data-geometry-view="paper" aria-pressed="false" data-t="geometry.paperView">Paper figure</button></div><div class="geometry-tools"><button id="pca-spin" class="icon-button" title="Rotate automatically" aria-label="Rotate automatically" aria-pressed="false"><i data-lucide="orbit"></i></button><button id="pca-reset" class="icon-button" title="Reset view" aria-label="Reset view"><i data-lucide="rotate-ccw"></i></button><button id="pca-expand" class="icon-button" title="Expand view" aria-label="Expand view"><i data-lucide="expand"></i></button></div></div>
+            <div id="pca-stage" tabindex="0" aria-label="Interactive measured endpoint PCA"><canvas id="pca-canvas"></canvas><div class="pca-title"><strong id="pca-title">SIGReg</strong><span id="pca-subtitle">INTACT · Epoch 1 · Z · seed 0</span></div><div id="pca-status" role="status"></div></div>
+            <button id="geometry-panel" class="figure-zoom geometry-panel" data-zoom="assets/figures/geometry-sigreg.webp" data-caption="SIGReg · Paper Figure 5" aria-label="Enlarge selected representation" hidden><img id="geometry-panel-image" src="assets/figures/geometry-sigreg.webp" alt="SIGReg representation from paper Figure 5" width="750" height="720" loading="lazy"><span class="zoom-indicator"><i data-lucide="expand"></i></span></button>
+            <div class="pca-task-filters" role="group" aria-label="Visible tasks"><label><input type="checkbox" data-pca-task="0" checked><span style="--task-color:#dc4960">PushT</span></label><label><input type="checkbox" data-pca-task="1" checked><span style="--task-color:#45a38a">Cube</span></label><label><input type="checkbox" data-pca-task="2" checked><span style="--task-color:#3f7cc4">Reacher</span></label><label><input type="checkbox" data-pca-task="3" checked><span style="--task-color:#d5a635">TwoRoom</span></label></div>
+            <p class="pca-note" data-t="geometry.pcaNote">Held-out endpoint representations · training seed 0 · 4,096 observations · PCA fitted jointly across tasks. Control success on the left averages three training seeds.</p>
+          </div>
         </div>
 <figcaption data-t="geometry.note">Actual learned representations. The eight regularizers show 3-D PCA views, with three-seed, four-task mean success rates. The separately trained 2-D glyph targets report single-seed success rates. Colors identify the four control tasks. Paper, Figure 5 and Table 5.</figcaption>
       </figure>

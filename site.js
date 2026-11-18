@@ -14,6 +14,8 @@
   const energyValues = { H: [3.3, 98.6], Z: [35.5, 99.0] };
 
   const chinese = {
+    'geometry.paperView': '论文原图',
+    'geometry.pcaNote': '留出观测的端点表征 · 训练 seed 0 · 4,096 个观测 · 四任务联合拟合 PCA。左侧控制成功率为三个训练 seed 的平均。',
     "curves.all": "全部四个数据集",
     "nav.insight": "问题", "nav.method": "方法", "nav.results": "控制", "nav.geometry": "几何", "nav.images": "图像", "nav.video": "视频", "nav.code": "代码",
     "explorer.regularizers": "正则项", "explorer.glyphs": "字形目标", "explorer.setting": "输出约束", "explorer.success": "第 1 个 epoch 的控制成功率", "explorer.fullFigure": "论文完整原图",
@@ -122,6 +124,7 @@
     image.alt = `${selected.label} · INTACT epoch 1 · Paper Figure 5`;
     $("#geometry-panel").dataset.zoom = path;
     $("#geometry-panel").dataset.caption = `${selected.label} · ${selected.success.toFixed(2)}% · Paper Figure 5`;
+    window.dispatchEvent(new CustomEvent('sadl-geometry-change', { detail: { id: selected.id, label: selected.label, language } }));
     for (const [id, en, zh] of [["geometry-previous", "Previous setting", "上一项"], ["geometry-next", "Next setting", "下一项"]]) {
       $("#" + id).title = language === "zh" ? zh : en;
       $("#" + id).setAttribute("aria-label", language === "zh" ? zh : en);
