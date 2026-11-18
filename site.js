@@ -493,7 +493,7 @@
     if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) dialog.close();
   });
 
-  // Rebuild the phase999 logo as a lightweight point cloud on hover.
+  // Animate connected particles without resampling the learned logo's colors.
   function initLogoParticles() {
     const host = $("#logo-particle-button");
     const canvas = host?.querySelector(".hero-logo-particles");
@@ -503,136 +503,160 @@
     if (!context) return;
 
     const image = new Image();
+    const atlas = document.createElement("canvas");
     const points = [];
     const pointer = { x: 0, y: 0, active: false };
-    let width = 0;
-    let height = 0;
-    let scale = 1;
-    let hovering = false;
-    let ready = false;
-    let frame = 0;
+    let width = 0, height = 0, fit = 1, offsetX = 0, offsetY = 0;
+    let hovering = false, ready = false, frame = 0, previousTime = 0;
 
     function resize() {
       const bounds = host.getBoundingClientRect();
       width = Math.max(1, bounds.width);
       height = Math.max(1, bounds.height);
-      scale = Math.min(window.devicePixelRatio || 1, 2);
+      const scale = Math.min(window.devicePixelRatio || 1, 2);
       canvas.width = Math.round(width * scale);
       canvas.height = Math.round(height * scale);
       context.setTransform(scale, 0, 0, scale, 0, 0);
+      fit = Math.min(width / image.naturalWidth, height / image.naturalHeight);
+      offsetX = (width - image.naturalWidth * fit) / 2;
+      offsetY = (height - image.naturalHeight * fit) / 2;
+      points.forEach(point => {
+        point.currentX = offsetX + point.x * fit;
+        point.currentY = offsetY + point.y * fit;
+        point.currentScale = 1;
+      });
+      if (ready) startAnimation();
     }
 
     function sample() {
-      const ratio = image.naturalHeight / image.naturalWidth || 0.345;
-      const sampleWidth = 1100;
-      const sampleHeight = Math.max(1, Math.round(sampleWidth * ratio));
+      const w = image.naturalWidth, h = image.naturalHeight;
       const buffer = document.createElement("canvas");
-      buffer.width = sampleWidth;
-      buffer.height = sampleHeight;
+      buffer.width = w; buffer.height = h;
       const bufferContext = buffer.getContext("2d", { willReadFrequently: true });
       if (!bufferContext) return;
-      bufferContext.drawImage(image, 0, 0, sampleWidth, sampleHeight);
-      const pixels = bufferContext.getImageData(0, 0, sampleWidth, sampleHeight).data;
-      const step = 2;
-      for (let y = 0; y < sampleHeight; y += step) {
-        for (let x = 0; x < sampleWidth; x += step) {
-          if ((x * 17 + y * 31) % 2 !== 0) continue;
-          const index = (y * sampleWidth + x) * 4;
-          const red = pixels[index];
-          const green = pixels[index + 1];
-          const blue = pixels[index + 2];
-          const alpha = pixels[index + 3];
-          if (alpha < 24 || (red > 244 && green > 244 && blue > 244)) continue;
-          points.push({
-            u: x / sampleWidth,
-            v: y / sampleHeight,
-            color: `rgba(${red},${green},${blue},${Math.max(.8, alpha / 255)})`,
-            radius: .68 + ((x * 13 + y * 7) % 11) / 11,
-            phase: ((x * 5 + y * 3) % 100) / 100,
-            currentX: 0,
-            currentY: 0
-          });
+      bufferContext.drawImage(image, 0, 0);
+      const source = bufferContext.getImageData(0, 0, w, h).data;
+      const seen = new Uint8Array(w * h);
+      const components = [];
+
+      // Isolate the original dots and touching clusters, retaining every visible pixel.
+      for (let p = 0; p < w * h; p++) {
+        if (seen[p] || !source[p * 4 + 3]) continue;
+        const stack = [p], pixels = [];
+        let minX = w, minY = h, maxX = 0, maxY = 0;
+        seen[p] = 1;
+        while (stack.length) {
+          const index = stack.pop(), x = index % w, y = Math.floor(index / w);
+          pixels.push(index);
+          minX = Math.min(minX, x); maxX = Math.max(maxX, x);
+          minY = Math.min(minY, y); maxY = Math.max(maxY, y);
+          const neighbors = [];
+          if (x) neighbors.push(index - 1);
+          if (x + 1 < w) neighbors.push(index + 1);
+          if (y) neighbors.push(index - w);
+          if (y + 1 < h) neighbors.push(index + w);
+          for (const next of neighbors) {
+            if (seen[next] || !source[next * 4 + 3]) continue;
+            seen[next] = 1; stack.push(next);
+          }
         }
+        components.push({ minX, minY, width: maxX - minX + 1, height: maxY - minY + 1, pixels });
       }
+
+      // Pack masked sprites so overlapping bounding boxes never duplicate another dot.
+      atlas.width = 2048;
+      let left = 1, top = 1, rowHeight = 0;
+      for (const component of components) {
+        if (left + component.width + 1 > atlas.width) {
+          left = 1; top += rowHeight + 2; rowHeight = 0;
+        }
+        component.sx = left; component.sy = top;
+        left += component.width + 2;
+        rowHeight = Math.max(rowHeight, component.height);
+      }
+      atlas.height = top + rowHeight + 1;
+      const atlasContext = atlas.getContext("2d");
+      if (!atlasContext) return;
+      const texture = atlasContext.createImageData(atlas.width, atlas.height);
+      for (const component of components) {
+        for (const p of component.pixels) {
+          const x = p % w - component.minX + component.sx;
+          const y = Math.floor(p / w) - component.minY + component.sy;
+          const target = (y * atlas.width + x) * 4;
+          for (let channel = 0; channel < 4; channel++) texture.data[target + channel] = source[p * 4 + channel];
+        }
+        points.push({
+          x: component.minX + component.width / 2,
+          y: component.minY + component.height / 2,
+          sx: component.sx, sy: component.sy,
+          width: component.width, height: component.height,
+          currentX: 0, currentY: 0, currentScale: 1
+        });
+      }
+      atlasContext.putImageData(texture, 0, 0);
       ready = points.length > 0;
       resize();
-      points.forEach((point) => { point.currentX = point.u * width; point.currentY = point.v * height; });
     }
 
     function animate(now) {
       frame = 0;
       if (!ready) return;
-      const time = now * .001;
-      const centerX = width / 2;
-      const centerY = height / 2;
+      const delta = Math.min((now - previousTime) / 16.67 || 1, 3);
+      previousTime = now;
+      const ease = 1 - Math.pow(.82, delta);
+      let moving = false;
       context.clearRect(0, 0, width, height);
-      points.forEach((point) => {
-        const baseX = centerX + (point.u * width - centerX) * (hovering ? 1.055 : 1);
-        const baseY = centerY + (point.v * height - centerY) * (hovering ? 1.055 : 1);
-        let targetX = baseX;
-        let targetY = baseY;
+      for (const point of points) {
+        const baseX = offsetX + point.x * fit, baseY = offsetY + point.y * fit;
+        let targetX = baseX, targetY = baseY, targetScale = 1;
         if (hovering && pointer.active) {
-          const dx = baseX - pointer.x;
-          const dy = baseY - pointer.y;
+          const dx = baseX - pointer.x, dy = baseY - pointer.y;
           const distance = Math.hypot(dx, dy);
-          const radius = Math.min(190, Math.max(100, width * .17));
-          if (distance > 0 && distance < radius) {
-            const force = 16 * Math.pow(1 - distance / radius, 2);
-            targetX += dx / distance * force;
-            targetY += dy / distance * force;
+          const radius = Math.min(230, Math.max(110, width * .21));
+          if (distance < radius) {
+            const influence = Math.pow(1 - distance / radius, 2);
+            const force = 34 * influence;
+            if (distance > .01) {
+              targetX += dx / distance * force;
+              targetY += dy / distance * force;
+            }
+            targetScale = 1 + .8 * influence;
           }
         }
-        if (hovering) {
-          targetX += Math.sin(time * 1.8 + point.phase * 8) * .8;
-          targetY += Math.cos(time * 1.55 + point.phase * 7) * .8;
-        }
-        point.currentX += (targetX - point.currentX) * (hovering ? .18 : .24);
-        point.currentY += (targetY - point.currentY) * (hovering ? .18 : .24);
-        context.fillStyle = point.color;
-        context.beginPath();
-        context.arc(point.currentX, point.currentY, point.radius * (hovering ? 1.08 : 1), 0, Math.PI * 2);
-        context.fill();
-      });
-      if (hovering || points.some((point) => Math.abs(point.currentX - point.u * width) > .15 || Math.abs(point.currentY - point.v * height) > .15)) {
-        frame = requestAnimationFrame(animate);
+        point.currentX += (targetX - point.currentX) * ease;
+        point.currentY += (targetY - point.currentY) * ease;
+        point.currentScale += (targetScale - point.currentScale) * ease;
+        const spriteWidth = point.width * fit * point.currentScale;
+        const spriteHeight = point.height * fit * point.currentScale;
+        context.drawImage(atlas, point.sx, point.sy, point.width, point.height,
+          point.currentX - spriteWidth / 2, point.currentY - spriteHeight / 2, spriteWidth, spriteHeight);
+        moving ||= Math.abs(point.currentX - baseX) > .02 || Math.abs(point.currentY - baseY) > .02 || Math.abs(point.currentScale - 1) > .002;
       }
+      host.classList.add("is-particle-ready");
+      if (hovering || moving) frame = requestAnimationFrame(animate);
+      else previousTime = 0;
     }
 
     function startAnimation() {
-      if (!frame) frame = requestAnimationFrame(animate);
+      if (ready && !frame) frame = requestAnimationFrame(animate);
+    }
+    function movePointer(event) {
+      const bounds = host.getBoundingClientRect();
+      pointer.x = event.clientX - bounds.left; pointer.y = event.clientY - bounds.top;
+      pointer.active = true;
+      startAnimation();
     }
 
-    image.onload = () => { sample(); startAnimation(); };
+    image.onload = sample;
     image.src = sourcePath;
-    host.addEventListener("pointerenter", (event) => {
-      hovering = true;
-      pointer.active = true;
-      const bounds = host.getBoundingClientRect();
-      pointer.x = event.clientX - bounds.left;
-      pointer.y = event.clientY - bounds.top;
-      host.classList.add("is-particle-hover");
-      startAnimation();
+    host.addEventListener("pointerenter", event => {
+      hovering = true; movePointer(event);
     });
-    host.addEventListener("pointermove", (event) => {
-      const bounds = host.getBoundingClientRect();
-      pointer.x = event.clientX - bounds.left;
-      pointer.y = event.clientY - bounds.top;
-      pointer.active = true;
-      startAnimation();
-    });
+    host.addEventListener("pointermove", movePointer);
     host.addEventListener("pointerleave", () => {
-      hovering = false;
-      pointer.active = false;
-      host.classList.remove("is-particle-hover");
-      startAnimation();
+      hovering = false; pointer.active = false; startAnimation();
     });
-    window.addEventListener("resize", () => {
-      resize();
-      points.forEach((point) => {
-        point.currentX = point.u * width;
-        point.currentY = point.v * height;
-      });
-    }, { passive: true });
+    new ResizeObserver(resize).observe(host);
   }
   initLogoParticles();
 
